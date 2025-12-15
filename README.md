@@ -181,7 +181,7 @@ RELAY_URL=wss://rpc.whistle.ninja
 
 - **Website**: [whistle.ninja](https://links.whistle.ninja)
 - **Twitter**: [@WhistleNetwork](https://twitter.com/whistleninja)
-- **Token**: [View on Solscan](https://solscan.io/token/6Hb2xgEhyN9iVVH3cgSxYjfN774ExzgiCftwiWdjpump)
+- **$WHISTLE**: [View on Solscan](https://solscan.io/token/6Hb2xgEhyN9iVVH3cgSxYjfN774ExzgiCftwiWdjpump)
 
 
 
