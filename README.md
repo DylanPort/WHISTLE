@@ -11,18 +11,18 @@ Whistle Network is a decentralized RPC caching and distribution system built on 
 │                      Whistle Network                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
-│  │   Stakers   │    │ Cache Nodes │    │ Developers  │        │
-│  │ (WHISTLE)   │    │  (Relays)   │    │  (API Keys) │        │
-│  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘        │
-│         │                  │                  │                │
-│         ▼                  ▼                  ▼                │
-│  ┌──────────────────────────────────────────────────────┐     │
-│  │              Smart Contract (Solana)                  │     │
-│  │  • Staking Pool    • Cache Node Registry             │     │
-│  │  • Payment Vault   • Developer Accounts              │     │
-│  │  • X402 Payments   • Rewards Distribution            │     │
-│  └──────────────────────────────────────────────────────┘     │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐          │
+│  │   Stakers   │    │ Cache Nodes │    │ Developers  │          │
+│  │ (WHISTLE)   │    │  (Relays)   │    │  (API Keys) │          │
+│  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘          │
+│         │                  │                  │                 │
+│         ▼                  ▼                  ▼                 │
+│  ┌──────────────────────────────────────────────────────┐       │
+│  │              Smart Contract (Solana)                  │      │
+│  │  • Staking Pool    • Cache Node Registry             │       │
+│  │  • Payment Vault   • Developer Accounts              │       │
+│  │  • X402 Payments   • Rewards Distribution            │       │
+│  └──────────────────────────────────────────────────────┘       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
