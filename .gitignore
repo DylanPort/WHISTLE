@@ -1,0 +1,94 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Environment files (contains secrets)
+.env
+.env.local
+.env.production
+*.env
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+data/
+*.json.backup
+
+# Keypairs & secrets
+*.json
+!package.json
+!tsconfig.json
+!whistle_staking.json
+keypair*.json
+*-keypair.json
+authority.json
+operator.json
+wallet.json
+
+# Build outputs
+dist/
+build/
+out/
+*.js.map
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.csr
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+
+# Cache
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+
+# Stats persistence (sensitive)
+global-stats.json
+wallet-stats.json
+profiles.json
+
+# Videos and large media
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Backup files
+*.bak
+*.backup
+

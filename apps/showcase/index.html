@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whistle Showcase | Projects Built on Whistle RPC</title>
+  <meta name="description" content="Discover amazing projects built with Whistle RPC. Bots, dApps, tools - all powered by decentralized infrastructure.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #16161f;
+      --bg-card-hover: #1a1a25;
+      --accent: #00ff88;
+      --accent-dim: #00cc6a;
+      --accent-glow: rgba(0, 255, 136, 0.3);
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0b0;
+      --text-dim: #6a6a7a;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(0, 255, 136, 0.3);
+      --gradient-accent: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
+      --gradient-gold: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Video Background */
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .video-bg video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .video-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.7) 100%);
+      backdrop-filter: blur(3px);
+    }
+    .video-bg video {
+      filter: blur(2px);
+    }
+
+    @media (max-width: 768px) {
+      .video-bg { display: none; }
+    }
+
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+    .logo img { height: 36px; }
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .logo-text span { color: var(--accent); }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .btn-primary {
+      background: var(--gradient-accent);
+      color: #000;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Main */
+    main {
+      position: relative;
+      z-index: 1;
+      padding-top: 80px;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 4rem 2rem 3rem;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid var(--border-accent);
+      padding: 0.5rem 1rem;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+      50% { box-shadow: 0 0 20px 5px var(--accent-glow); }
+    }
+    .badge .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .hero h1 .gradient {
+      background: var(--gradient-accent);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      margin-top: 2rem;
+    }
+    .hero-stat {
+      text-align: center;
+    }
+    .hero-stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .hero-stat-label {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* Filters */
+    .filters {
+      max-width: 1400px;
+      margin: 0 auto 2rem;
+      padding: 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .filter-tab {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+    .filter-tab:hover, .filter-tab.active {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .filter-select {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* Showcase Grid */
+    .showcase {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+    }
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Project Card */
+    .project-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .project-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-accent);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .project-card.featured {
+      border-color: var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+    .project-header {
+      padding: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .project-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .project-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .project-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .project-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .project-name .verified {
+      color: var(--accent);
+      font-size: 0.9rem;
+    }
+    .project-name .featured-badge {
+      background: var(--gradient-gold);
+      color: #000;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .project-meta {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .project-type {
+      background: rgba(255,255,255,0.05);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .project-body {
+      padding: 0 1.25rem;
+    }
+    .project-desc {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .project-footer {
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      margin-top: 1rem;
+    }
+    .project-stats {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .project-stats span {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .vote-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.85rem;
+    }
+    .vote-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .vote-btn.voted {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    /* Section Title */
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 1.5rem;
+      background: var(--gradient-accent);
+      border-radius: 2px;
+    }
+
+    /* Submit Section */
+    .submit-section {
+      max-width: 800px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+    .submit-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+    .form-grid {
+      display: grid;
+      gap: 1.25rem;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+    .form-group label {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .verify-status {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .verify-status.success {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+    }
+    .verify-status.error {
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid #ff4444;
+      color: #ff4444;
+    }
+    .verify-status.pending {
+      background: rgba(255, 200, 0, 0.1);
+      border: 1px solid #ffc800;
+      color: #ffc800;
+    }
+
+    /* Project Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.3s;
+    }
+    .modal-overlay.active .modal {
+      transform: translateY(0);
+    }
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .modal-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 16px;
+      background: var(--bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      overflow: hidden;
+    }
+    .modal-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .modal-title {
+      flex: 1;
+    }
+    .modal-title h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .modal-title .meta {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .modal-close:hover { color: var(--text-primary); }
+    .modal-body {
+      padding: 1.5rem;
+    }
+    .modal-desc {
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+    .modal-links {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .modal-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .modal-link:hover {
+      color: var(--accent);
+      background: rgba(0, 255, 136, 0.1);
+    }
+    .modal-stats {
+      display: flex;
+      gap: 2rem;
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+    }
+    .modal-stat {
+      text-align: center;
+    }
+    .modal-stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .modal-stat-label {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .modal-actions .vote-btn {
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+    }
+
+    /* Comments */
+    .comments-section {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+    .comments-title {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: var(--text-secondary);
+    }
+    .comment-input {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .comment-input input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+    }
+    .comment-input input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .comment-input button {
+      padding: 0.75rem 1.5rem;
+    }
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .comment {
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+    }
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+    }
+    .comment-author {
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .comment-time {
+      color: var(--text-dim);
+    }
+    .comment-content {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .no-comments {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-dim);
+    }
+
+    /* Challenge Banner */
+    .challenge-banner {
+      max-width: 1400px;
+      margin: 0 auto 2rem;
+      padding: 0 2rem;
+    }
+    .challenge-card {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 212, 255, 0.1) 100%);
+      border: 1px solid var(--border-accent);
+      border-radius: 16px;
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+    .challenge-info h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .challenge-info h3 .prize {
+      background: var(--gradient-gold);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .challenge-info p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+    .challenge-timer {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .timer-item {
+      text-align: center;
+      background: var(--bg-card);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      min-width: 60px;
+    }
+    .timer-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .timer-label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+    footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+    footer a:hover { color: var(--accent); }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .header-content { padding: 0.75rem 1rem; }
+      .nav-links { display: none; }
+      .hero { padding: 3rem 1rem 2rem; }
+      .hero-stats { gap: 1.5rem; }
+      .filters { flex-direction: column; align-items: stretch; }
+      .filter-tabs { overflow-x: auto; }
+      .showcase { padding: 0 1rem 3rem; }
+      .showcase-grid { grid-template-columns: 1fr; }
+      .submit-section { padding: 0 1rem; }
+      .challenge-card { flex-direction: column; text-align: center; }
+      .modal { margin: 1rem; max-height: 90vh; }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-dim);
+    }
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+    .empty-state h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="video-bg">
+    <video autoplay muted loop playsinline>
+      <source src="bg-video-web.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+  </div>
+
+  <header>
+    <div class="header-content">
+      <a href="/" class="logo">
+        <img src="whistle-logo.png" alt="Whistle" onerror="this.style.display='none'">
+        <span class="logo-text">Whistle <span>Showcase</span></span>
+      </a>
+      <nav class="nav-links">
+        <a href="#showcase">Explore</a>
+        <a href="#submit">Submit</a>
+        <a href="https://whistle.ninja">Stake</a>
+        <a href="https://api.whistle.ninja">API</a>
+        <a href="https://earn.whistle.ninja">Run a Node</a>
+        <button id="connectWalletBtn" onclick="connectWallet()" class="btn-primary" style="display:flex;align-items:center;gap:0.5rem">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M16 12h.01"/></svg>
+          <span id="walletBtnText">Connect</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="badge">
+        <span class="dot"></span>
+        COMMUNITY SHOWCASE
+      </div>
+      <h1>
+        Projects Built With<br>
+        <span class="gradient">Whistle RPC</span>
+      </h1>
+      <p>
+        Discover bots, dApps, and tools powered by decentralized infrastructure. 
+        Vote for your favorites, leave feedback, and submit your own project.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-value" id="totalProjects">0</div>
+          <div class="hero-stat-label">Projects</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value" id="totalVotes">0</div>
+          <div class="hero-stat-label">Votes</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value" id="totalComments">0</div>
+          <div class="hero-stat-label">Comments</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Challenge Banner -->
+    <div class="challenge-banner">
+      <div class="challenge-card">
+        <div class="challenge-info">
+          <h3>🏆 Round 1 Challenge: <span class="prize">5 SOL Prize</span></h3>
+          <p>First 5 verified projects compete. Community votes, winner takes all!</p>
+        </div>
+        <div class="challenge-timer">
+          <div class="timer-item">
+            <div class="timer-value" id="daysLeft">4</div>
+            <div class="timer-label">Days</div>
+          </div>
+          <div class="timer-item">
+            <div class="timer-value" id="hoursLeft">0</div>
+            <div class="timer-label">Hours</div>
+          </div>
+          <a href="#submit" class="btn-primary">Submit Now →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters" id="showcase">
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-type="all">All</button>
+        <button class="filter-tab" data-type="website">dApps</button>
+        <button class="filter-tab" data-type="bot">Bots</button>
+        <button class="filter-tab" data-type="tool">Tools</button>
+        <button class="filter-tab" data-type="game">Games</button>
+      </div>
+      <select class="filter-select" id="sortSelect">
+        <option value="newest">Newest First</option>
+        <option value="votes">Most Votes</option>
+        <option value="views">Most Views</option>
+      </select>
+    </div>
+
+    <!-- Showcase Grid -->
+    <section class="showcase">
+      <div class="showcase-grid" id="projectsGrid">
+        <!-- Projects loaded dynamically -->
+      </div>
+    </section>
+
+    <!-- Submit Section -->
+    <section class="submit-section" id="submit">
+      <h2 class="section-title">Submit Your Project</h2>
+      <div class="submit-card">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Your Wallet Address</label>
+            <input type="text" id="walletAddress" placeholder="Your Solana wallet (for prize distribution)">
+          </div>
+          
+          <div class="form-group">
+            <label>Your Whistle API Key (for verification)</label>
+            <input type="password" id="apiKey" placeholder="Paste your Whistle RPC API key">
+            <button onclick="verifyApiKey()" class="btn-primary" style="margin-top:0.5rem;width:100%" id="verifyBtn">Verify Subscription</button>
+          </div>
+          
+          <div id="verifyResult" style="display:none"></div>
+
+          <div id="projectFields" style="display:none">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Project Name *</label>
+                <input type="text" id="projectName" placeholder="What's your project called?">
+              </div>
+              <div class="form-group">
+                <label>Project Type *</label>
+                <select id="projectType">
+                  <option value="">Select type...</option>
+                  <option value="website">Website / dApp</option>
+                  <option value="bot">Trading Bot</option>
+                  <option value="tool">Developer Tool</option>
+                  <option value="game">Game</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Project Logo (optional)</label>
+              <div style="display:flex;gap:0.5rem;align-items:center">
+                <input type="file" id="logoFile" accept="image/*" style="flex:1" onchange="handleLogoUpload(event)">
+                <div id="logoPreview" style="width:48px;height:48px;border-radius:8px;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;overflow:hidden">
+                  <span style="color:var(--text-dim);font-size:0.7rem">No logo</span>
+                </div>
+              </div>
+              <p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.25rem">Max 3MB. PNG, JPG, or GIF.</p>
+            </div>
+
+            <div class="form-group">
+              <label>Project URL *</label>
+              <input type="url" id="projectUrl" placeholder="https://your-project.com">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>GitHub (optional)</label>
+                <input type="url" id="githubUrl" placeholder="https://github.com/...">
+              </div>
+              <div class="form-group">
+                <label>Twitter (optional)</label>
+                <input type="url" id="twitterUrl" placeholder="https://twitter.com/...">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Description *</label>
+              <textarea id="description" placeholder="Tell us what your project does and why it's innovative..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Demo Video (optional)</label>
+              <input type="url" id="demoVideo" placeholder="YouTube or Loom link">
+            </div>
+
+            <button onclick="submitProject()" class="btn-primary" style="width:100%;padding:1rem;font-size:1rem">Submit Project →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      Built by <a href="https://whistle.ninja">Whistle</a> · 
+      The decentralized RPC for Solana · 
+      <a href="https://x.com/whistleninja">Twitter</a> · 
+      <a href="https://t.me/whistleninja">Telegram</a>
+    </p>
+  </footer>
+
+  <!-- Project Modal -->
+  <div class="modal-overlay" id="projectModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-logo" id="modalLogo">🚀</div>
+        <div class="modal-title">
+          <h2 id="modalTitle">Project Name</h2>
+          <div class="meta" id="modalMeta">by wallet · type</div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="modalDesc">Project description...</p>
+        
+        <div class="modal-links" id="modalLinks"></div>
+
+        <div class="modal-stats">
+          <div class="modal-stat">
+            <div class="modal-stat-value" id="modalVotes">0</div>
+            <div class="modal-stat-label">Votes</div>
+          </div>
+          <div class="modal-stat">
+            <div class="modal-stat-value" id="modalViews">0</div>
+            <div class="modal-stat-label">Views</div>
+          </div>
+          <div class="modal-stat">
+            <div class="modal-stat-value" id="modalComments">0</div>
+            <div class="modal-stat-label">Comments</div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="vote-btn" id="modalVoteBtn" onclick="voteProject()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            Vote
+          </button>
+          <a href="#" target="_blank" id="modalVisitBtn" class="btn-secondary">Visit Project →</a>
+          <button class="btn-secondary" id="modalEditBtn" onclick="openEditModal()" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+        </div>
+
+        <div class="comments-section">
+          <h4 class="comments-title">💬 Comments</h4>
+          <div class="comment-input">
+            <input type="text" id="commentInput" placeholder="Leave a comment... (wallet required)">
+            <button class="btn-primary" onclick="addComment()">Post</button>
+          </div>
+          <div class="comments-list" id="commentsList">
+            <div class="no-comments">No comments yet. Be the first!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">
+          <h2>Edit Project</h2>
+          <div class="meta">Update your project details</div>
+        </div>
+        <button class="modal-close" onclick="closeEditModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid" style="gap:1rem">
+          <div class="form-group">
+            <label>Project Name</label>
+            <input type="text" id="editProjectName">
+          </div>
+          <div class="form-group">
+            <label>Project Type</label>
+            <select id="editProjectType">
+              <option value="website">Website / dApp</option>
+              <option value="bot">Trading Bot</option>
+              <option value="tool">Developer Tool</option>
+              <option value="game">Game</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Project URL</label>
+            <input type="url" id="editProjectUrl">
+          </div>
+          <div class="form-group">
+            <label>Update Logo</label>
+            <div style="display:flex;gap:0.5rem;align-items:center">
+              <input type="file" id="editLogoFile" accept="image/*" style="flex:1" onchange="handleEditLogoUpload(event)">
+              <div id="editLogoPreview" style="width:48px;height:48px;border-radius:8px;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;overflow:hidden">
+                <span style="color:var(--text-dim);font-size:0.7rem">Logo</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>GitHub URL</label>
+              <input type="url" id="editGithubUrl">
+            </div>
+            <div class="form-group">
+              <label>Twitter URL</label>
+              <input type="url" id="editTwitterUrl">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="editDescription" style="min-height:100px"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Demo Video URL</label>
+            <input type="url" id="editDemoVideo">
+          </div>
+          <button onclick="saveProjectEdit()" class="btn-primary" style="width:100%;padding:1rem">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://devs.whistle.ninja/api';
+    
+    let projects = [];
+    let currentProject = null;
+    let verifiedApiKeyHash = null;
+    let userWallet = null;
+
+    // Wallet Connect
+    async function connectWallet() {
+      const provider = window.phantom?.solana || window.solflare;
+      
+      if (!provider) {
+        alert('Please install Phantom or Solflare wallet extension');
+        window.open('https://phantom.app/', '_blank');
+        return;
+      }
+
+      try {
+        const resp = await provider.connect();
+        userWallet = resp.publicKey.toString();
+        
+        // Update UI
+        const btn = document.getElementById('connectWalletBtn');
+        document.getElementById('walletBtnText').textContent = userWallet.slice(0, 4) + '...' + userWallet.slice(-4);
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+        btn.style.color = 'var(--accent)';
+        
+        // Auto-fill wallet field if on submit form
+        const walletInput = document.getElementById('walletAddress');
+        if (walletInput && !walletInput.value) {
+          walletInput.value = userWallet;
+        }
+        
+        // Store in localStorage
+        localStorage.setItem('connectedWallet', userWallet);
+        
+        return userWallet;
+      } catch (e) {
+        console.log('Wallet connect failed:', e);
+        return null;
+      }
+    }
+
+    function disconnectWallet() {
+      userWallet = null;
+      localStorage.removeItem('connectedWallet');
+      const btn = document.getElementById('connectWalletBtn');
+      document.getElementById('walletBtnText').textContent = 'Connect';
+      btn.classList.add('btn-primary');
+      btn.classList.remove('btn-secondary');
+      btn.style.color = '';
+    }
+
+    // Check for existing connection on load
+    async function checkWalletConnection() {
+      const savedWallet = localStorage.getItem('connectedWallet');
+      if (savedWallet) {
+        const provider = window.phantom?.solana || window.solflare;
+        if (provider?.isConnected) {
+          userWallet = savedWallet;
+          document.getElementById('walletBtnText').textContent = savedWallet.slice(0, 4) + '...' + savedWallet.slice(-4);
+          const btn = document.getElementById('connectWalletBtn');
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-secondary');
+          btn.style.color = 'var(--accent)';
+        }
+      }
+    }
+
+    // Get wallet (connect if needed)
+    async function getWallet() {
+      if (userWallet) return userWallet;
+      return await connectWallet();
+    }
+
+    // Load stats
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/stats`);
+        const stats = await res.json();
+        document.getElementById('totalProjects').textContent = stats.projects || 0;
+        document.getElementById('totalVotes').textContent = stats.votes || 0;
+        document.getElementById('totalComments').textContent = stats.comments || 0;
+      } catch (e) {
+        console.log('Stats load failed');
+      }
+    }
+
+    // Load projects
+    async function loadProjects(type = 'all', sort = 'newest') {
+      try {
+        let url = `${API_BASE}/projects?sort=${sort === 'newest' ? '' : sort}`;
+        if (type !== 'all') url += `&type=${type}`;
+        
+        const res = await fetch(url);
+        projects = await res.json();
+        renderProjects();
+      } catch (e) {
+        console.error('Failed to load projects:', e);
+        document.getElementById('projectsGrid').innerHTML = `
+          <div class="empty-state" style="grid-column: 1/-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <h3>No projects yet</h3>
+            <p>Be the first to submit a project!</p>
+          </div>
+        `;
+      }
+    }
+
+    // Render projects
+    function renderProjects() {
+      const grid = document.getElementById('projectsGrid');
+      
+      if (projects.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1/-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            <h3>No projects found</h3>
+            <p>Be the first to submit a project!</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = projects.map(p => `
+        <div class="project-card ${p.featured ? 'featured' : ''}" onclick="openProject(${p.id})">
+          <div class="project-header">
+            <div class="project-logo">
+              ${p.logo_data ? `<img src="${p.logo_data}">` : (p.logo_url ? `<img src="${p.logo_url}" onerror="this.parentElement.innerHTML=getTypeEmoji('${p.project_type}')">` : getTypeEmoji(p.project_type))}
+            </div>
+            <div class="project-info">
+              <div class="project-name">
+                ${p.project_name}
+                ${p.verified ? '<span class="verified">✓</span>' : ''}
+                ${p.featured ? '<span class="featured-badge">FEATURED</span>' : ''}
+              </div>
+              <div class="project-meta">
+                <span>${p.wallet}</span>
+                <span class="project-type">${p.project_type}</span>
+              </div>
+            </div>
+          </div>
+          <div class="project-body">
+            <p class="project-desc">${p.description}</p>
+          </div>
+          <div class="project-footer">
+            <div class="project-stats">
+              <span>▲ ${p.votes}</span>
+              <span>👁 ${p.views}</span>
+            </div>
+            <button class="vote-btn ${hasVoted(p.id) ? 'voted' : ''}" onclick="event.stopPropagation(); quickVote(${p.id})">
+              ${hasVoted(p.id) ? '✓ Voted' : '▲ Vote'}
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getTypeEmoji(type) {
+      const emojis = { website: '🌐', bot: '🤖', tool: '🔧', game: '🎮', other: '🚀' };
+      return emojis[type] || '🚀';
+    }
+
+    function hasVoted(projectId) {
+      return localStorage.getItem(`voted_${projectId}`) === 'true';
+    }
+
+    // Quick vote from card
+    async function quickVote(projectId) {
+      if (hasVoted(projectId)) {
+        alert('You already voted for this project');
+        return;
+      }
+
+      // Get wallet via connect
+      const wallet = await getWallet();
+      if (!wallet) {
+        alert('Please connect your wallet to vote');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/projects/${projectId}/vote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ wallet })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          localStorage.setItem(`voted_${projectId}`, 'true');
+          loadProjects(getCurrentFilter(), document.getElementById('sortSelect').value);
+          loadStats();
+        } else {
+          alert('❌ ' + (data.error || 'Vote failed'));
+        }
+      } catch (e) {
+        alert('Failed to vote. Try again.');
+      }
+    }
+
+    // Open project modal
+    async function openProject(id) {
+      try {
+        const res = await fetch(`${API_BASE}/projects/${id}`);
+        currentProject = await res.json();
+        
+        document.getElementById('modalLogo').innerHTML = currentProject.logo_data 
+          ? `<img src="${currentProject.logo_data}">`
+          : (currentProject.logo_url 
+            ? `<img src="${currentProject.logo_url}" onerror="this.parentElement.innerHTML=getTypeEmoji('${currentProject.project_type}')">`
+            : getTypeEmoji(currentProject.project_type));
+        document.getElementById('modalTitle').innerHTML = `
+          ${currentProject.project_name}
+          ${currentProject.verified ? '<span style="color:var(--accent)">✓</span>' : ''}
+        `;
+        document.getElementById('modalMeta').textContent = `by ${currentProject.wallet} · ${currentProject.project_type}`;
+        document.getElementById('modalDesc').textContent = currentProject.description;
+        document.getElementById('modalVotes').textContent = currentProject.votes;
+        document.getElementById('modalViews').textContent = currentProject.views;
+        document.getElementById('modalComments').textContent = currentProject.comments?.length || 0;
+        document.getElementById('modalVisitBtn').href = currentProject.project_url;
+        
+        // Links with SVG icons
+        let links = `<a href="${currentProject.project_url}" target="_blank" class="modal-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Visit</a>`;
+        if (currentProject.github_url) links += `<a href="${currentProject.github_url}" target="_blank" class="modal-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> GitHub</a>`;
+        if (currentProject.twitter_url) links += `<a href="${currentProject.twitter_url}" target="_blank" class="modal-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> Twitter</a>`;
+        if (currentProject.demo_video) links += `<a href="${currentProject.demo_video}" target="_blank" class="modal-link"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Demo</a>`;
+        document.getElementById('modalLinks').innerHTML = links;
+
+        // Vote button
+        const voteBtn = document.getElementById('modalVoteBtn');
+        if (hasVoted(id)) {
+          voteBtn.classList.add('voted');
+          voteBtn.innerHTML = '✓ Voted';
+        } else {
+          voteBtn.classList.remove('voted');
+          voteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg> Vote';
+        }
+
+        // Comments
+        renderComments(currentProject.comments || []);
+
+        // Show edit button if user is owner
+        const editBtn = document.getElementById('modalEditBtn');
+        if (userWallet && currentProject.wallet.includes(userWallet.slice(0, 4))) {
+          editBtn.style.display = 'flex';
+          editBtn.dataset.fullWallet = userWallet;
+        } else {
+          editBtn.style.display = 'none';
+        }
+
+        document.getElementById('projectModal').classList.add('active');
+      } catch (e) {
+        console.error('Failed to load project:', e);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('projectModal').classList.remove('active');
+      currentProject = null;
+      // Refresh projects to update views
+      loadProjects(getCurrentFilter(), document.getElementById('sortSelect').value);
+    }
+
+    // Edit functionality
+    let editLogoData = null;
+    
+    function handleEditLogoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (file.size > 3 * 1024 * 1024) {
+        alert('Logo too large. Max 3MB.');
+        event.target.value = '';
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        editLogoData = e.target.result;
+        document.getElementById('editLogoPreview').innerHTML = `<img src="${editLogoData}" style="width:100%;height:100%;object-fit:cover">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function openEditModal() {
+      if (!currentProject || !userWallet) return;
+      
+      // Pre-fill form
+      document.getElementById('editProjectName').value = currentProject.project_name || '';
+      document.getElementById('editProjectType').value = currentProject.project_type || 'website';
+      document.getElementById('editProjectUrl').value = currentProject.project_url || '';
+      document.getElementById('editGithubUrl').value = currentProject.github_url || '';
+      document.getElementById('editTwitterUrl').value = currentProject.twitter_url || '';
+      document.getElementById('editDescription').value = currentProject.description || '';
+      document.getElementById('editDemoVideo').value = currentProject.demo_video || '';
+      
+      // Show current logo
+      if (currentProject.logo_data || currentProject.logo_url) {
+        document.getElementById('editLogoPreview').innerHTML = `<img src="${currentProject.logo_data || currentProject.logo_url}" style="width:100%;height:100%;object-fit:cover">`;
+      }
+      
+      editLogoData = null;
+      document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('active');
+      editLogoData = null;
+    }
+
+    async function saveProjectEdit() {
+      if (!currentProject || !userWallet) return;
+      
+      try {
+        const res = await fetch(`${API_BASE}/projects/${currentProject.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet: userWallet,
+            projectName: document.getElementById('editProjectName').value.trim(),
+            projectType: document.getElementById('editProjectType').value,
+            projectUrl: document.getElementById('editProjectUrl').value.trim(),
+            logoData: editLogoData,
+            githubUrl: document.getElementById('editGithubUrl').value.trim() || null,
+            twitterUrl: document.getElementById('editTwitterUrl').value.trim() || null,
+            description: document.getElementById('editDescription').value.trim(),
+            demoVideo: document.getElementById('editDemoVideo').value.trim() || null
+          })
+        });
+
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('✅ Project updated!');
+          closeEditModal();
+          closeModal();
+          loadProjects(getCurrentFilter(), document.getElementById('sortSelect').value);
+        } else {
+          alert('❌ ' + (data.error || 'Update failed'));
+        }
+      } catch (e) {
+        alert('Failed to update. Try again.');
+      }
+    }
+
+    // Vote from modal
+    async function voteProject() {
+      if (!currentProject) return;
+      if (hasVoted(currentProject.id)) {
+        alert('You already voted for this project');
+        return;
+      }
+
+      // Get wallet via connect
+      const wallet = await getWallet();
+      if (!wallet) {
+        alert('Please connect your wallet to vote');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/projects/${currentProject.id}/vote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ wallet })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          localStorage.setItem(`voted_${currentProject.id}`, 'true');
+          document.getElementById('modalVotes').textContent = data.votes;
+          document.getElementById('modalVoteBtn').classList.add('voted');
+          document.getElementById('modalVoteBtn').innerHTML = '✓ Voted';
+          loadStats();
+        } else {
+          alert('❌ ' + (data.error || 'Vote failed'));
+        }
+      } catch (e) {
+        alert('Failed to vote. Try again.');
+      }
+    }
+
+    // Comments
+    function renderComments(comments) {
+      const list = document.getElementById('commentsList');
+      if (comments.length === 0) {
+        list.innerHTML = '<div class="no-comments">No comments yet. Be the first!</div>';
+        return;
+      }
+      list.innerHTML = comments.map(c => `
+        <div class="comment">
+          <div class="comment-header">
+            <span class="comment-author">${c.wallet}</span>
+            <span class="comment-time">${timeAgo(c.created_at * 1000)}</span>
+          </div>
+          <div class="comment-content">${escapeHtml(c.content)}</div>
+        </div>
+      `).join('');
+    }
+
+    async function addComment() {
+      if (!currentProject) return;
+      
+      const content = document.getElementById('commentInput').value.trim();
+      if (!content) return;
+
+      // Get wallet via connect
+      const wallet = await getWallet();
+      if (!wallet) {
+        alert('Please connect your wallet to comment');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/projects/${currentProject.id}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ wallet, content })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          document.getElementById('commentInput').value = '';
+          
+          // Add to list
+          const list = document.getElementById('commentsList');
+          const noComments = list.querySelector('.no-comments');
+          if (noComments) noComments.remove();
+          
+          list.insertAdjacentHTML('afterbegin', `
+            <div class="comment">
+              <div class="comment-header">
+                <span class="comment-author">${data.wallet}</span>
+                <span class="comment-time">just now</span>
+              </div>
+              <div class="comment-content">${escapeHtml(content)}</div>
+            </div>
+          `);
+          
+          const count = parseInt(document.getElementById('modalComments').textContent) + 1;
+          document.getElementById('modalComments').textContent = count;
+          loadStats();
+        } else {
+          alert('❌ ' + (data.error || 'Failed to post comment'));
+        }
+      } catch (e) {
+        alert('Failed to post comment. Try again.');
+      }
+    }
+
+    // Verify API key
+    async function verifyApiKey() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const resultDiv = document.getElementById('verifyResult');
+      const verifyBtn = document.getElementById('verifyBtn');
+      
+      if (!apiKey) {
+        showVerifyResult('error', '❌ Please enter your API key');
+        return;
+      }
+
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying...';
+      resultDiv.style.display = 'block';
+      showVerifyResult('pending', '⏳ Verifying your subscription...');
+
+      try {
+        const res = await fetch(`${API_BASE}/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey })
+        });
+        
+        const data = await res.json();
+        
+        if (data.valid) {
+          verifiedApiKeyHash = data.hash;
+          showVerifyResult('success', '✅ Subscription verified! Complete your submission below.');
+          document.getElementById('projectFields').style.display = 'block';
+        } else {
+          showVerifyResult('error', '❌ ' + (data.error || 'Invalid API key'));
+        }
+      } catch (e) {
+        showVerifyResult('error', '❌ Could not verify. Check your API key.');
+      }
+
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = 'Verify Subscription';
+    }
+
+    function showVerifyResult(status, message) {
+      const resultDiv = document.getElementById('verifyResult');
+      resultDiv.style.display = 'block';
+      resultDiv.className = `verify-status ${status}`;
+      resultDiv.textContent = message;
+    }
+
+    // Logo upload handler
+    let uploadedLogoData = null;
+    
+    function handleLogoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (file.size > 3 * 1024 * 1024) {
+        alert('Logo too large. Max 3MB.');
+        event.target.value = '';
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        uploadedLogoData = e.target.result;
+        document.getElementById('logoPreview').innerHTML = `<img src="${uploadedLogoData}" style="width:100%;height:100%;object-fit:cover">`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Submit project
+    async function submitProject() {
+      if (!verifiedApiKeyHash) {
+        alert('Please verify your API key first');
+        return;
+      }
+
+      const wallet = document.getElementById('walletAddress').value.trim();
+      const projectName = document.getElementById('projectName').value.trim();
+      const projectType = document.getElementById('projectType').value;
+      const projectUrl = document.getElementById('projectUrl').value.trim();
+      const githubUrl = document.getElementById('githubUrl').value.trim();
+      const twitterUrl = document.getElementById('twitterUrl').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const demoVideo = document.getElementById('demoVideo').value.trim();
+
+      if (!wallet || !projectName || !projectType || !projectUrl || !description) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      if (wallet.length < 32 || wallet.length > 44) {
+        alert('Invalid Solana wallet address');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/projects`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet,
+            projectName,
+            projectType,
+            projectUrl,
+            logoData: uploadedLogoData,
+            githubUrl,
+            twitterUrl,
+            description,
+            demoVideo,
+            apiKeyHash: verifiedApiKeyHash
+          })
+        });
+
+        const data = await res.json();
+        
+        if (data.success) {
+          alert('🎉 ' + data.message);
+          userWallet = wallet;
+          uploadedLogoData = null;
+          loadProjects();
+          loadStats();
+          document.getElementById('projectFields').style.display = 'none';
+          document.getElementById('verifyResult').style.display = 'none';
+          verifiedApiKeyHash = null;
+          // Clear form
+          ['walletAddress', 'apiKey', 'projectName', 'projectUrl', 'githubUrl', 'twitterUrl', 'description', 'demoVideo'].forEach(id => {
+            document.getElementById(id).value = '';
+          });
+          document.getElementById('projectType').value = '';
+          document.getElementById('logoFile').value = '';
+          document.getElementById('logoPreview').innerHTML = '<span style="color:var(--text-dim);font-size:0.7rem">No logo</span>';
+        } else {
+          alert('❌ ' + (data.error || 'Submission failed'));
+        }
+      } catch (e) {
+        alert('Failed to submit. Try again.');
+      }
+    }
+
+    // Filter handlers
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        loadProjects(tab.dataset.type, document.getElementById('sortSelect').value);
+      });
+    });
+
+    document.getElementById('sortSelect').addEventListener('change', (e) => {
+      loadProjects(getCurrentFilter(), e.target.value);
+    });
+
+    function getCurrentFilter() {
+      return document.querySelector('.filter-tab.active')?.dataset.type || 'all';
+    }
+
+    // Utils
+    function timeAgo(timestamp) {
+      const seconds = Math.floor((Date.now() - timestamp) / 1000);
+      if (seconds < 60) return 'just now';
+      if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+      if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+      return Math.floor(seconds / 86400) + 'd ago';
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Countdown
+    function updateCountdown() {
+      const deadline = new Date('2025-12-20T23:59:59');
+      const now = new Date();
+      const diff = deadline - now;
+      
+      if (diff <= 0) {
+        document.getElementById('daysLeft').textContent = '0';
+        document.getElementById('hoursLeft').textContent = '0';
+        return;
+      }
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      
+      document.getElementById('daysLeft').textContent = days;
+      document.getElementById('hoursLeft').textContent = hours;
+    }
+
+    // Close modal on overlay click
+    document.getElementById('projectModal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('modal-overlay')) {
+        closeModal();
+      }
+    });
+
+    // Close modal on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Init
+    checkWalletConnection();
+    loadStats();
+    loadProjects();
+    updateCountdown();
+    setInterval(updateCountdown, 60000);
+    setInterval(() => {
+      loadProjects(getCurrentFilter(), document.getElementById('sortSelect').value);
+    }, 60000);
+  </script>
+</body>
+</html>

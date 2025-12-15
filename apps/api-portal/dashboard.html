@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Whistle RPC</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #111111;
+      --bg-tertiary: #1a1a1a;
+      --border: #222222;
+      --text-primary: #ffffff;
+      --text-secondary: #888888;
+      --text-dim: #555555;
+      --accent: #00ff88;
+      --accent-dim: rgba(0, 255, 136, 0.1);
+      --red: #ff4d4d;
+      --orange: #ff9500;
+      --purple: #a855f7;
+      --font-main: 'Space Grotesk', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .logo-text {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .wallet-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .wallet-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      border: none;
+      font-size: 0.9rem;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    .btn-danger {
+      background: rgba(255, 77, 77, 0.1);
+      border: 1px solid var(--red);
+      color: var(--red);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Main Content */
+    main {
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Login Screen */
+    .login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      text-align: center;
+    }
+
+    .login-screen h1 {
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+
+    .login-screen p {
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    .login-btn {
+      padding: 16px 32px;
+      font-size: 1rem;
+      background: linear-gradient(135deg, #9945FF, #14F195);
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+      display: none;
+    }
+
+    .dashboard-grid.active {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    /* Stat Cards */
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .stat-card.full-width {
+      grid-column: span 4;
+    }
+
+    .stat-card.half-width {
+      grid-column: span 2;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .stat-value.accent { color: var(--accent); }
+    .stat-value.orange { color: var(--orange); }
+    .stat-value.purple { color: var(--purple); }
+
+    .stat-sub {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      margin-top: 16px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #00cc6a);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .progress-fill.warning {
+      background: linear-gradient(90deg, var(--orange), #cc7700);
+    }
+
+    .progress-fill.danger {
+      background: linear-gradient(90deg, var(--red), #cc0000);
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    /* API Key Display */
+    .api-key-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .api-key-value {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .api-key-value button {
+      padding: 6px 12px;
+      background: var(--accent-dim);
+      border: none;
+      border-radius: 6px;
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .api-key-value button:hover {
+      background: var(--accent);
+      color: #000;
+    }
+
+    /* Subscription Info */
+    .sub-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .sub-item {
+      padding: 16px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+    }
+
+    .sub-item-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .sub-item-value {
+      font-weight: 600;
+    }
+
+    /* Chart Container */
+    .chart-container {
+      height: 300px;
+      margin-top: 20px;
+    }
+
+    /* Actions */
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    /* Endpoints Table */
+    .endpoints-table {
+      width: 100%;
+      margin-top: 16px;
+    }
+
+    .endpoints-table th,
+    .endpoints-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .endpoints-table th {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    .endpoints-table td {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    /* Status Badge */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status-badge.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .status-badge.cancelled {
+      background: rgba(255, 77, 77, 0.1);
+      color: var(--red);
+    }
+
+    .status-badge.expired {
+      background: rgba(255, 149, 0, 0.1);
+      color: var(--orange);
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(8px);
+    }
+
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 16px;
+    }
+
+    .modal-content p {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .dashboard-grid.active {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .stat-card.full-width,
+      .stat-card.half-width {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px 20px;
+      }
+      main {
+        padding: 20px;
+      }
+      .dashboard-grid.active {
+        grid-template-columns: 1fr;
+      }
+      .stat-card.full-width,
+      .stat-card.half-width {
+        grid-column: span 1;
+      }
+      .sub-info {
+        grid-template-columns: 1fr;
+      }
+      .actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">
+      <img src="/logo.png" alt="Whistle">
+      <span class="logo-text">WHISTLE</span>
+    </a>
+    <div class="header-right" id="headerRight" style="display: none;">
+      <div class="wallet-display">
+        <span class="wallet-dot"></span>
+        <span id="walletAddress">...</span>
+      </div>
+      <button class="btn btn-secondary" onclick="disconnect()">Disconnect</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+      <h1>Dashboard</h1>
+      <p>Connect your wallet to view your subscription and usage stats.</p>
+      <button class="btn login-btn" onclick="connectWallet()">Connect Wallet</button>
+      <p style="margin-top: 24px; font-size: 0.85rem; color: var(--text-dim);">
+        Don't have a subscription? <a href="/#pricing" style="color: var(--accent);">Get started</a>
+      </p>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-grid" id="dashboard">
+      <!-- Plan & Status -->
+      <div class="stat-card">
+        <div class="stat-label">Current Plan</div>
+        <div class="stat-value accent" id="planName">-</div>
+        <div class="stat-sub"><span class="status-badge active" id="statusBadge">Active</span></div>
+      </div>
+
+      <!-- Requests Today -->
+      <div class="stat-card">
+        <div class="stat-label">Requests Today</div>
+        <div class="stat-value" id="requestsToday">0</div>
+        <div class="stat-sub" id="avgResponseTime">Avg: 0ms</div>
+      </div>
+
+      <!-- Success Rate -->
+      <div class="stat-card">
+        <div class="stat-label">Success Rate</div>
+        <div class="stat-value accent" id="successRate">100%</div>
+        <div class="stat-sub">Last 24 hours</div>
+      </div>
+
+      <!-- Expires -->
+      <div class="stat-card">
+        <div class="stat-label">Expires In</div>
+        <div class="stat-value orange" id="expiresIn">-</div>
+        <div class="stat-sub" id="expiresDate">-</div>
+      </div>
+
+      <!-- Usage Progress -->
+      <div class="stat-card half-width">
+        <div class="stat-label">Monthly Usage</div>
+        <div class="stat-value"><span id="usedRequests">0</span> <span style="font-size: 1rem; color: var(--text-secondary);">/ <span id="totalRequests">10M</span></span></div>
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" id="usageProgress" style="width: 0%"></div>
+          </div>
+          <div class="progress-labels">
+            <span id="usagePercent">0%</span>
+            <span id="remainingRequests">10M remaining</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Key -->
+      <div class="stat-card half-width">
+        <div class="stat-label">Your API Key</div>
+        <div class="api-key-box">
+          <div class="api-key-value">
+            <span id="apiKeyDisplay">wsk_••••••••••••••••</span>
+            <button onclick="copyApiKey()">Copy</button>
+          </div>
+        </div>
+        <div class="sub-info" style="margin-top: 16px;">
+          <div class="sub-item">
+            <div class="sub-item-label">Rate Limit</div>
+            <div class="sub-item-value" id="rateLimit">10 req/s</div>
+          </div>
+          <div class="sub-item">
+            <div class="sub-item-label">Billing</div>
+            <div class="sub-item-value" id="billingType">Monthly</div>
+          </div>
+          <div class="sub-item">
+            <div class="sub-item-label">Started</div>
+            <div class="sub-item-value" id="startDate">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage Chart -->
+      <div class="stat-card full-width">
+        <div class="stat-label">Request History (30 days)</div>
+        <div class="chart-container">
+          <canvas id="usageChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Endpoints -->
+      <div class="stat-card half-width">
+        <div class="stat-label">Top Endpoints</div>
+        <table class="endpoints-table">
+          <thead>
+            <tr>
+              <th>Endpoint</th>
+              <th>Requests</th>
+              <th>Avg Time</th>
+            </tr>
+          </thead>
+          <tbody id="endpointsBody">
+            <tr><td colspan="3" style="text-align: center; color: var(--text-dim);">No data yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Actions -->
+      <div class="stat-card half-width">
+        <div class="stat-label">Subscription Actions</div>
+        <div class="actions" style="margin-top: 12px;">
+          <button class="btn btn-primary" onclick="upgradePlan()">Upgrade Plan</button>
+          <button class="btn btn-secondary" onclick="renewSubscription()">Renew</button>
+        </div>
+        <div class="actions">
+          <button class="btn btn-danger" onclick="showCancelModal()">Cancel Subscription</button>
+        </div>
+        <p style="margin-top: 16px; font-size: 0.8rem; color: var(--text-dim);">
+          Cancellation takes effect at the end of your billing period.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Cancel Modal -->
+  <div class="modal" id="cancelModal" style="display: none;">
+    <div class="modal-content">
+      <h2>Cancel Subscription?</h2>
+      <p>Your access will continue until <strong id="cancelExpireDate">-</strong>. You won't be charged again.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeCancelModal()">Keep Subscription</button>
+        <button class="btn btn-danger" onclick="confirmCancel()">Yes, Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://api.whistle.ninja';
+    let wallet = null;
+    let subscription = null;
+    let usageChart = null;
+
+    // Connect wallet
+    async function connectWallet() {
+      try {
+        const phantom = window.phantom?.solana || window.solana;
+        if (!phantom) {
+          alert('Please install Phantom wallet');
+          return;
+        }
+
+        const resp = await phantom.connect();
+        wallet = {
+          provider: phantom,
+          publicKey: resp.publicKey
+        };
+
+        const addr = resp.publicKey.toBase58();
+        document.getElementById('walletAddress').textContent = addr.slice(0, 4) + '...' + addr.slice(-4);
+        document.getElementById('headerRight').style.display = 'flex';
+        
+        await loadSubscription(addr);
+      } catch (err) {
+        console.error('Connect error:', err);
+        alert('Failed to connect: ' + err.message);
+      }
+    }
+
+    // Disconnect
+    function disconnect() {
+      wallet = null;
+      subscription = null;
+      document.getElementById('headerRight').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('dashboard').classList.remove('active');
+    }
+
+    // Load subscription by wallet
+    async function loadSubscription(walletAddress) {
+      try {
+        // Check localStorage for API key first
+        const savedKey = localStorage.getItem('whistle_api_key');
+        let endpoint = `/api/subscription/wallet/${walletAddress}`;
+        
+        if (savedKey) {
+          endpoint = `/api/subscription/${savedKey}`;
+        }
+
+        const resp = await fetch(API_BASE + endpoint);
+        
+        if (!resp.ok) {
+          document.getElementById('loginScreen').innerHTML = `
+            <h1>No Active Subscription</h1>
+            <p>You don't have an active subscription for this wallet.</p>
+            <a href="/#pricing" class="btn login-btn" style="margin-top: 24px;">Get Started</a>
+          `;
+          return;
+        }
+
+        const data = await resp.json();
+        subscription = data.subscription;
+        
+        // Save API key locally
+        localStorage.setItem('whistle_api_key', subscription.apiKey);
+        
+        displayDashboard();
+        loadUsageStats();
+      } catch (err) {
+        console.error('Load subscription error:', err);
+        alert('Failed to load subscription');
+      }
+    }
+
+    // Display dashboard with subscription data
+    function displayDashboard() {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').classList.add('active');
+
+      const sub = subscription;
+      
+      // Plan
+      document.getElementById('planName').textContent = sub.plan.toUpperCase();
+      
+      // Status
+      const badge = document.getElementById('statusBadge');
+      badge.textContent = sub.status.charAt(0).toUpperCase() + sub.status.slice(1);
+      badge.className = 'status-badge ' + sub.status;
+      
+      // Expiration
+      const expiresAt = new Date(sub.expiresAt);
+      const daysLeft = Math.ceil((expiresAt - Date.now()) / (1000 * 60 * 60 * 24));
+      document.getElementById('expiresIn').textContent = daysLeft + ' days';
+      document.getElementById('expiresDate').textContent = expiresAt.toLocaleDateString();
+      document.getElementById('cancelExpireDate').textContent = expiresAt.toLocaleDateString();
+      
+      // Usage
+      const used = sub.requestsUsed || 0;
+      const limit = sub.requestsLimit;
+      const isUnlimited = limit < 0;
+      
+      document.getElementById('usedRequests').textContent = formatNumber(used);
+      document.getElementById('totalRequests').textContent = isUnlimited ? '∞' : formatNumber(limit);
+      
+      if (!isUnlimited) {
+        const percent = Math.min((used / limit) * 100, 100);
+        document.getElementById('usageProgress').style.width = percent + '%';
+        document.getElementById('usagePercent').textContent = percent.toFixed(1) + '%';
+        document.getElementById('remainingRequests').textContent = formatNumber(limit - used) + ' remaining';
+        
+        // Color based on usage
+        const fill = document.getElementById('usageProgress');
+        fill.classList.remove('warning', 'danger');
+        if (percent > 90) fill.classList.add('danger');
+        else if (percent > 70) fill.classList.add('warning');
+      } else {
+        document.getElementById('usageProgress').style.width = '10%';
+        document.getElementById('usagePercent').textContent = 'Unlimited';
+        document.getElementById('remainingRequests').textContent = '∞';
+      }
+      
+      // API Key
+      document.getElementById('apiKeyDisplay').textContent = sub.apiKey;
+      
+      // Rate limit
+      document.getElementById('rateLimit').textContent = sub.rateLimit < 0 ? 'Unlimited' : sub.rateLimit + ' req/s';
+      
+      // Billing
+      document.getElementById('billingType').textContent = sub.billing.charAt(0).toUpperCase() + sub.billing.slice(1);
+      
+      // Start date
+      document.getElementById('startDate').textContent = new Date(sub.createdAt).toLocaleDateString();
+    }
+
+    // Load usage stats
+    async function loadUsageStats() {
+      try {
+        const resp = await fetch(API_BASE + `/api/usage/${subscription.apiKey}`);
+        if (!resp.ok) return;
+
+        const data = await resp.json();
+        const usage = data.usage;
+        
+        // Today stats
+        document.getElementById('requestsToday').textContent = formatNumber(parseInt(usage.today.requests) || 0);
+        document.getElementById('avgResponseTime').textContent = 'Avg: ' + Math.round(usage.today.avg_time || 0) + 'ms';
+        document.getElementById('successRate').textContent = (usage.today.success_rate || 100).toFixed(1) + '%';
+        
+        // Chart
+        renderChart(usage.daily);
+        
+        // Endpoints
+        renderEndpoints(usage.endpoints);
+      } catch (err) {
+        console.error('Load usage error:', err);
+      }
+    }
+
+    // Render chart
+    function renderChart(dailyData) {
+      const ctx = document.getElementById('usageChart').getContext('2d');
+      
+      if (usageChart) usageChart.destroy();
+      
+      const labels = dailyData.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      const requests = dailyData.map(d => parseInt(d.requests));
+      
+      usageChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Requests',
+            data: requests,
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#888' }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#888' }
+            }
+          }
+        }
+      });
+    }
+
+    // Render endpoints table
+    function renderEndpoints(endpoints) {
+      const tbody = document.getElementById('endpointsBody');
+      
+      if (!endpoints || endpoints.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-dim);">No data yet</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = endpoints.map(ep => `
+        <tr>
+          <td>${ep.endpoint || 'Unknown'}</td>
+          <td>${formatNumber(parseInt(ep.count))}</td>
+          <td>${Math.round(ep.avg_time || 0)}ms</td>
+        </tr>
+      `).join('');
+    }
+
+    // Copy API key
+    function copyApiKey() {
+      navigator.clipboard.writeText(subscription.apiKey);
+      const btn = event.target;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    }
+
+    // Format number
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
+    }
+
+    // Upgrade plan
+    function upgradePlan() {
+      window.location.href = '/#pricing';
+    }
+
+    // Renew subscription
+    function renewSubscription() {
+      window.location.href = '/#pricing';
+    }
+
+    // Cancel modal
+    function showCancelModal() {
+      document.getElementById('cancelModal').style.display = 'flex';
+    }
+
+    function closeCancelModal() {
+      document.getElementById('cancelModal').style.display = 'none';
+    }
+
+    async function confirmCancel() {
+      try {
+        const resp = await fetch(API_BASE + `/api/subscription/${subscription.apiKey}/cancel`, {
+          method: 'POST'
+        });
+
+        if (!resp.ok) throw new Error('Cancel failed');
+
+        closeCancelModal();
+        subscription.status = 'cancelled';
+        displayDashboard();
+        alert('Subscription cancelled. Access continues until ' + new Date(subscription.expiresAt).toLocaleDateString());
+      } catch (err) {
+        console.error('Cancel error:', err);
+        alert('Failed to cancel: ' + err.message);
+      }
+    }
+
+    // Check if already connected
+    window.addEventListener('load', () => {
+      const savedKey = localStorage.getItem('whistle_api_key');
+      if (savedKey) {
+        // Try to load subscription directly
+        fetch(API_BASE + `/api/subscription/${savedKey}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            if (data && data.subscription) {
+              subscription = data.subscription;
+              document.getElementById('walletAddress').textContent = 'API Key';
+              document.getElementById('headerRight').style.display = 'flex';
+              displayDashboard();
+              loadUsageStats();
+            }
+          })
+          .catch(() => {});
+      }
+    });
+  </script>
+</body>
+</html>

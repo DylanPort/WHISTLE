@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TX RACE - Whistle</title>
+    <link rel="icon" href="https://whistle.ninja/whistel_logo_top_right_2048.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #111111;
+            --bg-hover: #1a1a1a;
+            --border: #222222;
+            --text: #e0e0e0;
+            --text-dim: #666666;
+            --accent: #00ff88;
+            --accent-dim: rgba(0, 255, 136, 0.1);
+            --warning: #ffaa00;
+            --error: #ff4444;
+            --purple: #aa66ff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Background */
+        /* Video Background */
+        .video-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.5);
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo img {
+            height: 40px;
+        }
+        
+        .logo-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .balance-display {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .balance-item {
+            text-align: center;
+        }
+        
+        .balance-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .balance-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent);
+            pointer-events: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(180deg, #00ff88, #00cc66);
+            color: #000;
+            box-shadow: 0 2px 8px rgba(0,255,136,0.3);
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary:disabled {
+            background: var(--text-dim);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            text-align: center;
+        }
+        
+        .welcome-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .welcome-subtitle {
+            font-size: 1.5rem;
+            color: var(--text-dim);
+            margin-bottom: 3rem;
+        }
+        
+        .welcome-stats {
+            display: flex;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+        
+        .welcome-stat {
+            text-align: center;
+        }
+        
+        .welcome-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .welcome-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        
+        /* Game Screen */
+        .game-screen {
+            display: none;
+        }
+        
+        .game-screen.active {
+            display: block;
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .game-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Cards - Metallic Game Style */
+        .card {
+            background: linear-gradient(165deg, rgba(35,40,50,0.95), rgba(20,24,30,0.98));
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                inset 0 -1px 0 rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text);
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Race List */
+        .race-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .race-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1.5rem;
+            align-items: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .race-item:hover {
+            border-color: var(--accent);
+            background: var(--bg-hover);
+        }
+        
+        .race-item.countdown {
+            border-color: var(--warning);
+            animation: pulse 1s infinite;
+        }
+        
+        .race-item.live {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .race-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .race-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .race-entry {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .race-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+        
+        .race-players {
+            color: var(--accent);
+        }
+        
+        .race-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .race-status.open {
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+        
+        .race-status.countdown {
+            background: rgba(255, 170, 0, 0.1);
+            color: var(--warning);
+        }
+        
+        .race-status.live {
+            background: rgba(255, 68, 68, 0.1);
+            color: var(--error);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        /* Player Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .stat-value.negative {
+            color: var(--error);
+        }
+        
+        .stat-value.positive {
+            color: var(--accent);
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+        
+        /* Leaderboard */
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .leaderboard-item {
+            display: grid;
+            grid-template-columns: 30px 1fr auto;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: var(--bg);
+            border-radius: 6px;
+            align-items: center;
+        }
+        
+        .leaderboard-item.gold { border-left: 3px solid #ffd700; }
+        .leaderboard-item.silver { border-left: 3px solid #c0c0c0; }
+        .leaderboard-item.bronze { border-left: 3px solid #cd7f32; }
+        
+        .leaderboard-rank {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--text-dim);
+        }
+        
+        .leaderboard-wallet {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .leaderboard-wins {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+        
+        /* Race Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* Race View */
+        .race-view {
+            display: none;
+        }
+        
+        .race-view.active {
+            display: block;
+        }
+        
+        .race-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .race-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+        
+        .race-pool-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--accent);
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+        
+        .race-pool-label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        /* Countdown Display */
+        .countdown-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 6rem;
+            font-weight: 900;
+            color: #e0e0e0;
+            text-shadow: 
+                0 0 30px rgba(255,255,255,0.2),
+                0 4px 8px rgba(0,0,0,0.5);
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+            border-radius: 16px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .countdown-display.go {
+            color: #00ff88;
+            text-shadow: 
+                0 0 40px rgba(0,255,136,0.6),
+                0 0 80px rgba(0,255,136,0.4),
+                0 4px 8px rgba(0,0,0,0.5);
+            animation: go-flash 0.15s infinite;
+        }
+        
+        @keyframes go-flash {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.02); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* GO Button */
+        .go-button {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #2a3040, #1a1f28);
+            border: 3px solid rgba(255,255,255,0.1);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 
+                0 8px 24px rgba(0,0,0,0.4),
+                inset 0 2px 0 rgba(255,255,255,0.1),
+                inset 0 -2px 0 rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .go-button::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.05);
+        }
+        
+        .go-button:hover:not(:disabled) {
+            transform: scale(1.03);
+            border-color: rgba(0,255,136,0.3);
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .go-button:disabled {
+            background: linear-gradient(145deg, #252a35, #181c24);
+            border-color: rgba(255,255,255,0.05);
+            cursor: not-allowed;
+            color: rgba(255,255,255,0.3);
+        }
+        
+        .go-button.active {
+            background: linear-gradient(145deg, #00aa66, #008855);
+            border-color: #00ff88;
+            color: #000;
+            box-shadow: 
+                0 0 40px rgba(0,255,136,0.4),
+                inset 0 2px 0 rgba(255,255,255,0.2);
+        }
+        
+        .go-button.submitting {
+            animation: button-spin 0.5s linear infinite;
+        }
+        
+        @keyframes button-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Players Grid */
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+            padding: 1rem;
+            background: linear-gradient(180deg, rgba(0,0,0,0.2), transparent);
+            border-radius: 12px;
+        }
+        
+        .player-slot {
+            background: linear-gradient(145deg, rgba(35,40,50,0.8), rgba(20,24,30,0.9));
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .player-slot.filled {
+            background: linear-gradient(145deg, rgba(40,45,55,0.9), rgba(25,28,35,0.95));
+            border-color: rgba(255,255,255,0.1);
+        }
+        
+        .player-slot.you {
+            background: linear-gradient(145deg, rgba(0,60,40,0.5), rgba(0,40,25,0.6));
+            border-color: rgba(0,255,136,0.3);
+            box-shadow: 
+                inset 0 1px 0 rgba(0,255,136,0.1),
+                0 0 20px rgba(0,255,136,0.1);
+        }
+        
+        .player-slot.winner {
+            background: linear-gradient(145deg, rgba(80,60,0,0.5), rgba(50,40,0,0.6));
+            border-color: rgba(255,215,0,0.4);
+            animation: winner-glow 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes winner-glow {
+            0%, 100% { 
+                box-shadow: 0 0 15px rgba(255,215,0,0.2), inset 0 0 20px rgba(255,215,0,0.05);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(255,215,0,0.4), inset 0 0 30px rgba(255,215,0,0.1);
+            }
+        }
+        
+        .player-addr {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .player-slot.filled .player-addr {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        /* Results */
+        .results-list {
+            text-align: left;
+            margin-top: 2rem;
+        }
+        
+        .result-item {
+            display: grid;
+            grid-template-columns: 40px 1fr auto auto;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+        
+        .result-rank {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+        
+        .result-rank.first { color: #ffd700; }
+        .result-rank.second { color: #c0c0c0; }
+        .result-rank.third { color: #cd7f32; }
+        
+        .result-wallet {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .result-slot {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+        
+        .result-tx {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+        
+        /* Deposit Modal */
+        .deposit-modal .modal-content {
+            max-width: 400px;
+        }
+        
+        .deposit-input-group {
+            margin: 1.5rem 0;
+        }
+        
+        .deposit-input {
+            width: 100%;
+            padding: 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        
+        .deposit-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .quick-amounts {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .quick-amount {
+            padding: 0.5rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+        }
+        
+        .quick-amount:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        /* RPC Status */
+        .rpc-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--accent-dim);
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+        
+        .rpc-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 1s infinite;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            z-index: 2000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success { border-color: var(--accent); }
+        .toast.error { border-color: var(--error); }
+        
+        /* Hidden */
+        .hidden { display: none !important; }
+        
+        /* ============= MOBILE RESPONSIVE ============= */
+        @media (max-width: 768px) {
+            /* Video background on mobile - use static or hide */
+            .video-bg-container {
+                display: none;
+            }
+            
+            body {
+                background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
+            }
+            
+            /* Header mobile - single row, compact */
+            .header {
+                padding: 0.5rem 0.75rem;
+                gap: 0.5rem;
+                flex-wrap: nowrap;
+                background: rgba(10, 10, 15, 0.95);
+            }
+            
+            .logo {
+                font-size: 0.9rem;
+                white-space: nowrap;
+            }
+            
+            .header-right {
+                gap: 0.5rem;
+                flex-wrap: nowrap;
+            }
+            
+            .header-actions {
+                gap: 0.25rem;
+            }
+            
+            .header-actions .btn {
+                padding: 0.25rem 0.4rem;
+                font-size: 0.65rem;
+            }
+            
+            .header-actions .btn-small {
+                padding: 0.2rem 0.35rem;
+            }
+            
+            .balance-display {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.7rem;
+                gap: 0.25rem;
+            }
+            
+            .balance-display span:first-child {
+                display: none; /* Hide the emoji on mobile */
+            }
+            
+            /* Hide some buttons on mobile */
+            #profileBtn {
+                display: none;
+            }
+            
+            .game-container {
+                padding: 0.5rem;
+            }
+            
+            .game-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .card-header {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .card-body {
+                padding: 0.5rem;
+            }
+            
+            /* Modals mobile */
+            .modal-content {
+                width: 95%;
+                max-width: none;
+                margin: 0.5rem;
+                padding: 1rem;
+                max-height: 90vh;
+            }
+            
+            /* Toast mobile */
+            .toast {
+                left: 0.5rem;
+                right: 0.5rem;
+                width: auto;
+                font-size: 0.8rem;
+                padding: 0.75rem;
+            }
+            
+            /* Player slots mobile */
+            .players-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem !important;
+            }
+            
+            .player-slot {
+                padding: 0.4rem;
+                font-size: 0.7rem;
+            }
+            
+            /* Countdown mobile */
+            .countdown-display {
+                font-size: 2.5rem !important;
+            }
+            
+            .go-button {
+                font-size: 1rem;
+                padding: 0.75rem 1.5rem;
+            }
+            
+            /* Stats on mobile */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stat-item {
+                padding: 0.5rem;
+            }
+            
+            .stat-value {
+                font-size: 1.2rem;
+            }
+            
+            .stat-label {
+                font-size: 0.65rem;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .logo {
+                font-size: 0.8rem;
+            }
+            
+            .header-actions .btn {
+                padding: 0.2rem 0.3rem;
+                font-size: 0.6rem;
+            }
+            
+            .balance-display {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Video Background -->
+    <video autoplay muted loop playsinline id="bgVideo" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -2;">
+        <source src="bg_web.mp4" type="video/mp4">
+    </video>
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 15, 0.6); z-index: -1;"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="https://whistle.ninja/whistel_logo_top_right_2048.png" alt="Whistle">
+            <span class="logo-text">TX RACE</span>
+        </div>
+        <div class="header-right">
+            <div class="rpc-status" onclick="showSettings()" style="cursor: pointer;" title="Click to change RPC">
+                <div class="rpc-dot"></div>
+                <span>rpc.whistle.ninja</span>
+                <span id="currentRpcDisplay" style="font-size: 0.7rem; margin-left: 0.5rem;"></span>
+            </div>
+            <!-- Wallet & Balance Display -->
+            <!-- Profile Button -->
+            <button class="btn btn-secondary btn-small" onclick="showProfileEditor()" style="padding: 0.5rem 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span id="myAvatar" style="font-size: 1.2rem;">🏎️</span>
+                <span id="myName" style="font-size: 0.8rem;">Set Name</span>
+            </button>
+            <div class="balance-display" id="balanceDisplay">
+                <div class="balance-item" style="cursor: pointer;" onclick="copyBurnerAddress()" title="Click to copy game wallet address">
+                    <div class="balance-label">🔥 GAME WALLET</div>
+                    <div class="balance-value" id="headerBurnerBalance" style="font-size: 1.1rem;">0.00 SOL</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+            <button class="btn btn-secondary btn-small" id="settingsBtn" onclick="showSettings()">⚙️</button>
+        </div>
+    </header>
+    
+    <!-- Welcome Screen -->
+    <main class="container">
+        <div class="welcome-screen" id="welcomeScreen">
+            <h1 class="welcome-title">⚡ TX RACE ⚡</h1>
+            <p class="welcome-subtitle">First transaction to land wins the pool</p>
+            <div class="welcome-stats">
+                <div class="welcome-stat">
+                    <div class="welcome-stat-value" id="statRaces">0</div>
+                    <div class="welcome-stat-label">Total Races</div>
+                </div>
+                <div class="welcome-stat">
+                    <div class="welcome-stat-value" id="statPlayers">0</div>
+                    <div class="welcome-stat-label">Players Online</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="connectWallet()">Connect Wallet to Play</button>
+        </div>
+        
+        <!-- Game Screen -->
+        <div class="game-screen" id="gameScreen">
+            <div class="game-grid">
+                <!-- Main Content -->
+                <div class="main-content">
+                    <!-- Race Lobby -->
+                    <div class="card" id="lobbyView">
+                        <div class="card-header">
+                            <span class="card-title">Available Races</span>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-primary btn-small" onclick="showCreateRaceModal()">+ Create Race</button>
+                                <button class="btn btn-secondary btn-small" onclick="refreshRaces()">Refresh</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="race-list" id="raceList">
+                                <!-- Races populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Race View -->
+                    <div class="card race-view" id="raceView">
+                        <div class="card-header">
+                            <span class="card-title">Race <span id="currentRaceId">#0000</span></span>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-secondary btn-small" onclick="shareCurrentRace()" title="Share race link">🔗</button>
+                                <button class="btn btn-secondary btn-small" onclick="leaveRace()">Leave</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="race-header">
+                                <div class="race-number">Entry: <span id="raceEntryFee">0.05</span> SOL</div>
+                                <div class="race-pool-display" id="racePool">0.00 SOL</div>
+                                <div class="race-pool-label">Prize Pool</div>
+                            </div>
+                            
+                            <div class="countdown-display" id="countdownDisplay">--</div>
+                            
+                            <div class="players-grid" id="playersGrid">
+                                <!-- Players populated by JS -->
+                            </div>
+                            
+                            <div style="text-align: center;">
+                                <button class="go-button" id="goButton" disabled onclick="submitRaceEntry()">
+                                    WAIT
+                                </button>
+                                <p style="margin-top: 1rem; color: var(--text-dim); font-size: 0.85rem;" id="raceStatus">
+                                    Waiting for players...
+                                </p>
+                            </div>
+                            
+                            <div class="results-list hidden" id="resultsList">
+                                <!-- Results populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <!-- Your Stats -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Your Stats</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="userRaces">0</div>
+                                    <div class="stat-label">Races</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="userWins">0</div>
+                                    <div class="stat-label">Wins</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="userWinRate">0%</div>
+                                    <div class="stat-label">Win Rate</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="userProfit">0.00</div>
+                                    <div class="stat-label">Profit (SOL)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Leaderboard -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Leaderboard</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="leaderboard-list" id="leaderboard">
+                                <!-- Leaderboard populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- How to Play -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">How to Play</span>
+                        </div>
+                        <div class="card-body" style="font-size: 0.85rem; color: var(--text-dim);">
+                            <p style="margin-bottom: 0.5rem;">1. Deposit SOL to your game balance</p>
+                            <p style="margin-bottom: 0.5rem;">2. Join a race (entry fee deducted)</p>
+                            <p style="margin-bottom: 0.5rem;">3. Wait for countdown</p>
+                            <p style="margin-bottom: 0.5rem;">4. Press GO! exactly when it appears</p>
+                            <p style="margin-bottom: 0.5rem;">5. First TX to land wins the pool!</p>
+                            <p style="margin-top: 1rem; color: var(--accent);">Tip: Faster RPC = better chances</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Deposit Modal -->
+    <div class="modal deposit-modal" id="depositModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 0.5rem;">Deposit SOL</h2>
+            <p style="color: var(--text-dim); margin-bottom: 1rem;">Add funds to your game balance</p>
+            <div class="deposit-input-group">
+                <input type="number" class="deposit-input" id="depositAmount" placeholder="0.00" step="0.01" min="0.01">
+                <div class="quick-amounts">
+                    <button class="quick-amount" onclick="setDeposit(0.1)">0.1</button>
+                    <button class="quick-amount" onclick="setDeposit(0.5)">0.5</button>
+                    <button class="quick-amount" onclick="setDeposit(1)">1.0</button>
+                    <button class="quick-amount" onclick="setDeposit(5)">5.0</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModals()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="deposit()">Deposit</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Race Modal -->
+    <div class="modal" id="createRaceModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 0.5rem;">Create a Race</h2>
+            <p style="color: var(--accent); margin-bottom: 1rem;">You earn 5% of the prize pool!</p>
+            <div class="deposit-input-group">
+                <label style="color: var(--text-dim); font-size: 0.85rem; display: block; margin-bottom: 0.5rem;">Entry Fee (SOL)</label>
+                <select id="createRaceEntryFee" style="width: 100%; padding: 1rem; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 1.2rem;">
+                    <option value="0.01">0.01 SOL</option>
+                    <option value="0.05" selected>0.05 SOL</option>
+                    <option value="0.1">0.1 SOL</option>
+                    <option value="0.25">0.25 SOL</option>
+                    <option value="0.5">0.5 SOL</option>
+                    <option value="1">1 SOL</option>
+                    <option value="2">2 SOL</option>
+                    <option value="5">5 SOL</option>
+                </select>
+                <label style="color: var(--text-dim); font-size: 0.85rem; display: block; margin: 1rem 0 0.5rem;">Max Players</label>
+                <input type="number" id="createRaceMaxPlayers" value="10" min="2" max="20" style="width: 100%; padding: 1rem; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; text-align: center;">
+                <p style="color: var(--text-dim); font-size: 0.75rem; margin-top: 0.5rem; text-align: center;">2-20 players</p>
+            </div>
+            <div style="background: var(--bg); border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+                <p style="font-size: 0.85rem; color: var(--text-dim);">💰 <strong style="color: var(--accent);">You earn 5%</strong> of the final prize pool</p>
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem;">🏆 Winner gets 95% of the prize pool</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModals()" id="createRaceCancelBtn">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" id="createRaceBtn" onclick="handleCreateRace()">Create Race</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Withdraw Modal -->
+    <div class="modal" id="withdrawModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 0.5rem;">Withdraw SOL</h2>
+            <p style="color: var(--text-dim); margin-bottom: 1rem;">Withdraw to your wallet</p>
+            <div class="deposit-input-group">
+                <div style="position: relative;">
+                    <input type="number" class="deposit-input" id="withdrawAmount" placeholder="0.00" step="0.001" min="0.001">
+                    <button onclick="setMaxWithdraw()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--accent); color: var(--bg); border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 600; cursor: pointer;">MAX</button>
+                </div>
+                <p style="margin-top: 0.5rem; color: var(--text-dim); font-size: 0.85rem;">
+                    Available: <span id="withdrawAvailable">0.00</span> SOL (after fees)
+                </p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModals()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="withdraw()">Withdraw</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal deposit-modal" id="settingsModal">
+        <div class="modal-content" style="max-height: 85vh; overflow-y: auto;">
+            <h2 style="margin-bottom: 0.5rem;">⚙️ Settings</h2>
+            <p style="color: var(--text-dim); margin-bottom: 1rem; font-size: 0.85rem;">Customize your experience</p>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.85rem;">RPC Endpoint</label>
+                <input type="text" class="deposit-input" id="customRpcInput" placeholder="https://your-rpc-endpoint.com" style="margin-bottom: 0.5rem; padding: 0.5rem; font-size: 0.8rem;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary btn-small" onclick="setCustomRpc(document.getElementById('customRpcInput').value)">Save Custom RPC</button>
+                    <button class="btn btn-secondary btn-small" onclick="setCustomRpc('')">Use Default (Whistle)</button>
+                </div>
+            </div>
+            
+            <div style="padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 8px; margin-bottom: 1rem;">
+                <p style="font-size: 0.85rem; color: var(--accent); margin-bottom: 0.5rem;">Current RPC:</p>
+                <p style="font-size: 0.75rem; color: var(--text-dim); word-break: break-all;" id="settingsCurrentRpc">Loading...</p>
+            </div>
+
+            <!-- GAME WALLET SECTION -->
+            <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem;">
+                <h3 style="margin-bottom: 0.5rem; color: #ff6600;">🔥 Your Game Wallet</h3>
+                
+                <!-- Linked Main Wallet -->
+                <div id="linkedWalletSection" class="hidden" style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
+                    <p style="font-size: 0.75rem; color: var(--accent);">🔗 Linked to Main Wallet:</p>
+                    <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;" id="linkedWalletDisplay">-</p>
+                </div>
+                
+                <div id="burnerCreated">
+                    <div style="padding: 1rem; background: linear-gradient(135deg, rgba(255,102,0,0.15), rgba(255,102,0,0.03)); border: 1px solid rgba(255,102,0,0.4); border-radius: 10px; margin-bottom: 0.75rem; text-align: center;">
+                        <!-- Balances at top -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+                            <div style="padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 6px;">
+                                <p style="font-size: 0.6rem; color: var(--text-dim);">WALLET</p>
+                                <p style="font-size: 1.1rem; font-weight: bold; color: #ff6600;" id="burnerBalanceDisplay">0.0000</p>
+                            </div>
+                            <div style="padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 6px;">
+                                <p style="font-size: 0.6rem; color: var(--text-dim);">GAME BAL</p>
+                                <p style="font-size: 1.1rem; font-weight: bold; color: var(--accent);" id="settingsGameBalance">0.0000</p>
+                            </div>
+                        </div>
+                        <!-- Wallet address -->
+                        <p style="font-size: 0.65rem; color: var(--text-dim); margin-bottom: 0.25rem;">GAME WALLET ADDRESS:</p>
+                        <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; word-break: break-all; cursor: pointer; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 6px;" id="burnerAddressDisplay" onclick="copyBurnerAddress()">Loading...</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                        <button class="btn btn-primary" onclick="fundFromMainWallet()">💰 Fund from Phantom</button>
+                        <button class="btn btn-secondary" onclick="withdrawAll()">💸 Withdraw All</button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                        <button class="btn btn-secondary" onclick="copyBurnerAddress()">📋 Copy Address</button>
+                        <button class="btn btn-secondary" onclick="generateNewBurner()" style="background: rgba(255,100,0,0.3); border-color: #ff6600;">🔄 New Wallet</button>
+                    </div>
+                    
+                    <details style="margin-bottom: 0.5rem;">
+                        <summary style="cursor: pointer; color: var(--accent); font-size: 0.8rem; font-weight: 600;">💡 How it Works</summary>
+                        <div style="padding: 0.5rem; background: rgba(0,255,136,0.05); border-radius: 6px; margin-top: 0.5rem;">
+                            <ol style="color: var(--text-dim); font-size: 0.7rem; margin-left: 1rem; line-height: 1.4;">
+                                <li>Fund Game Wallet → Play popup-free → Withdraw anytime</li>
+                            </ol>
+                        </div>
+                    </details>
+                    
+                    <details style="margin-top: 1rem;">
+                        <summary style="cursor: pointer; color: var(--text-dim); font-size: 0.85rem;">⚠️ Advanced Options</summary>
+                        <div style="margin-top: 1rem; padding: 1rem; background: rgba(255,0,0,0.1); border-radius: 8px;">
+                            <p style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.75rem;">Export your private key to backup. Your game wallet is linked to your main wallet and will be recovered when you reconnect.</p>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button class="btn btn-small" onclick="showExportKey()" style="background: var(--warning);">Export Private Key</button>
+                                <button class="btn btn-small" onclick="deleteBurnerConfirm()" style="background: var(--error);">Reset Wallet</button>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+                <div id="burnerNotCreated" class="hidden"></div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="closeModals()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js?v=30"></script>
+</body>
+</html>
+

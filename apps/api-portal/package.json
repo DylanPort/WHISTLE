@@ -1,0 +1,28 @@
+{
+  "name": "@whistle-network/api-portal",
+  "version": "1.0.0",
+  "description": "Whistle RPC API Portal - Subscription management and dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:backend": "node backend/server.js",
+    "start:proxy": "node rpc-proxy/proxy.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.87.6",
+    "better-sqlite3": "^9.2.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "uuid": "^9.0.0",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
+

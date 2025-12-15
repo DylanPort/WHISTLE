@@ -1,0 +1,22 @@
+{
+  "name": "@whistle-network/node-client",
+  "version": "2.4.0",
+  "description": "Whistle Network cache node client - earn by serving RPC requests",
+  "main": "node.js",
+  "scripts": {
+    "start": "node node.js",
+    "status": "node scripts/status.js",
+    "claim": "node scripts/claim.js"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.87.6",
+    "@solana/spl-token": "^0.3.11",
+    "bs58": "^5.0.0",
+    "ws": "^8.14.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
+
