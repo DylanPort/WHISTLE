@@ -18,7 +18,7 @@ Whistle Network is a decentralized RPC caching and distribution system built on 
 │         │                  │                  │                 │
 │         ▼                  ▼                  ▼                 │
 │  ┌──────────────────────────────────────────────────────┐       │
-│  │              Smart Contract (Solana)                  │      │
+│  │              Smart Contract (Solana)                 │       │
 │  │  • Staking Pool    • Cache Node Registry             │       │
 │  │  • Payment Vault   • Developer Accounts              │       │
 │  │  • X402 Payments   • Rewards Distribution            │       │
@@ -176,9 +176,6 @@ RELAY_URL=wss://rpc.whistle.ninja
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
-
-MIT License - see [LICENSE](./LICENSE) for details.
 
 ## 🔗 Links
 
