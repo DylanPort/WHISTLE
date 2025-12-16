@@ -153,6 +153,7 @@ interface PersistedStats {
   totalUptime: number;        // Accumulated uptime in seconds
   lastDisconnect: number;     // Timestamp of last disconnect
   firstConnect: number;       // Timestamp of first ever connection
+  lastIP?: string;            // Last known IP for this wallet (used to detect node changes)
 }
 const walletStats = new Map<string, PersistedStats>();
 const STATS_FILE = '/root/cache-node-system/wallet-stats.json';
@@ -245,6 +246,7 @@ function loadWalletStats() {
         totalUptime: stats.totalUptime,
         lastDisconnect: stats.lastDisconnect,
         firstConnect: stats.firstConnect,
+        lastIP: (stats as any).lastIP || undefined,
       });
     }
     console.log(`[DB] Loaded stats for ${walletStats.size} wallets from SQLite`);
@@ -280,6 +282,7 @@ function saveWalletStats() {
         totalUptime: stats.totalUptime,
         lastDisconnect: stats.lastDisconnect,
         firstConnect: stats.firstConnect,
+        lastIP: stats.lastIP || null,
       });
     });
     console.log(`[DB] Saved stats for ${walletStats.size} wallets`);
@@ -793,6 +796,16 @@ wss.on('connection', async (ws, req) => {
             node.stats.cacheHits = persistedStats.cacheHits;
             node.stats.cacheMisses = persistedStats.cacheMisses;
             node.stats.errors = persistedStats.errors;
+            
+            // If this wallet is connecting from a DIFFERENT IP than it used previously,
+            // do not restore punitive/performance metrics (avgLatencyMs, errors).
+            // This prevents carrying penalties from one physical node to another.
+            if (persistedStats.lastIP && persistedStats.lastIP !== node.ip) {
+              console.log(`[RELAY] Detected wallet ${wallet.slice(0,8)} registering from different IP (was ${persistedStats.lastIP}, now ${node.ip}). Resetting performance penalties.`);
+              node.stats.avgLatencyMs = 0;
+              node.stats.errors = 0;
+            }
+
             // Store total uptime for reporting
             (node as any).totalUptime = persistedStats.totalUptime;
           }
@@ -855,6 +868,7 @@ wss.on('connection', async (ws, req) => {
         // Only add session uptime (don't double count)
         persisted.totalUptime += sessionUptime;
         persisted.lastDisconnect = Date.now();
+        persisted.lastIP = node.ip;
         // Update other stats
         persisted.requestsHandled = Math.max(persisted.requestsHandled, node.stats.requestsHandled);
         persisted.cacheHits = Math.max(persisted.cacheHits, node.stats.cacheHits);
@@ -871,6 +885,7 @@ wss.on('connection', async (ws, req) => {
           errors: node.stats.errors,
           totalUptime: sessionUptime,
           lastDisconnect: Date.now(),
+          lastIP: node.ip,
           firstConnect: node.connectedAt,
         });
       }

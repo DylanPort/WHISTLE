@@ -19,6 +19,7 @@ export interface WalletStats {
   totalUptime: number;
   lastDisconnect: number;
   firstConnect: number;
+  lastIP?: string;
 }
 
 export interface GlobalStats {
