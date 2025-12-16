@@ -246,7 +246,7 @@ function loadWalletStats() {
         totalUptime: stats.totalUptime,
         lastDisconnect: stats.lastDisconnect,
         firstConnect: stats.firstConnect,
-        lastIP: (stats as any).lastIP || undefined,
+        lastIP: stats.lastIP || undefined,
       });
     }
     console.log(`[DB] Loaded stats for ${walletStats.size} wallets from SQLite`);
