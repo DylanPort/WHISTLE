@@ -1,0 +1,18 @@
+[Unit]
+Description=Whistle Ops Metrics API
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/ops.whistle.ninja
+ExecStart=/usr/bin/node metrics-api.js
+Restart=always
+RestartSec=5
+
+# Environment
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whistle Open Operations - Live</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0b0d;
+            --bg-secondary: #12141a;
+            --bg-tertiary: #1a1d24;
+            --accent: #00ff88;
+            --accent-dim: rgba(0, 255, 136, 0.1);
+            --accent-orange: #ff6b35;
+            --accent-red: #ff4757;
+            --accent-yellow: #ffd93d;
+            --accent-blue: #4dabf7;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-dim: #606060;
+            --border: #2a2d35;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Space Grotesk', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        /* Video Background */
+        .video-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0.3;
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(10, 11, 13, 0.8) 0%, rgba(10, 11, 13, 0.95) 100%);
+            z-index: -1;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+        }
+
+        header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+        }
+
+        .header-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .header-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .header-links a:hover { color: var(--accent); }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .live-dot.healthy { background: var(--accent); }
+        .live-dot.warning { background: var(--accent-yellow); }
+        .live-dot.critical { background: var(--accent-red); animation: blink 0.5s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.9); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        main {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 1.5rem 0 2rem;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero h1 span { color: var(--accent); }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .overall-status {
+            text-align: center;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .overall-status.healthy {
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .overall-status.warning {
+            background: rgba(255, 217, 61, 0.1);
+            color: var(--accent-yellow);
+            border: 1px solid var(--accent-yellow);
+        }
+
+        .overall-status.critical {
+            background: rgba(255, 71, 87, 0.1);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+            animation: blink 1s infinite;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .status-card.healthy { border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
+        .status-card.warning { border-color: var(--accent-yellow); box-shadow: 0 0 20px rgba(255, 217, 61, 0.1); }
+        .status-card.critical { border-color: var(--accent-red); box-shadow: 0 0 20px rgba(255, 71, 87, 0.1); }
+
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 0.75rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .status-card.healthy .status-icon { background: var(--accent-dim); color: var(--accent); }
+        .status-card.warning .status-icon { background: rgba(255, 217, 61, 0.1); color: var(--accent-yellow); }
+        .status-card.critical .status-icon { background: rgba(255, 71, 87, 0.1); color: var(--accent-red); }
+
+        .status-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; }
+
+        .status-value {
+            font-family: var(--font-mono);
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .status-card.healthy .status-value { color: var(--accent); }
+        .status-card.warning .status-value { color: var(--accent-yellow); }
+        .status-card.critical .status-value { color: var(--accent-red); }
+
+        .status-detail {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            font-family: var(--font-mono);
+        }
+
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .section-title svg { color: var(--accent); }
+
+        .memory-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .memory-bar-container {
+            flex: 1;
+        }
+
+        .memory-bar {
+            height: 32px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .memory-used {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-left: 1rem;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: width 0.5s ease;
+        }
+
+        .memory-used.healthy { background: linear-gradient(90deg, var(--accent), #00cc6a); }
+        .memory-used.warning { background: linear-gradient(90deg, var(--accent-yellow), #e6c200); }
+        .memory-used.critical { background: linear-gradient(90deg, var(--accent-red), #cc0000); }
+
+        .memory-labels {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .memory-label { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+
+        .incident-feed {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .incident {
+            padding: 0.75rem;
+            border-left: 3px solid var(--border);
+            margin-bottom: 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .incident.info { border-left-color: var(--accent-blue); }
+        .incident.warning { border-left-color: var(--accent-yellow); }
+        .incident.error { border-left-color: var(--accent-red); }
+        .incident.resolved { border-left-color: var(--accent); }
+
+        .incident-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .incident-type {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .incident.info .incident-type { background: rgba(77, 171, 247, 0.2); color: var(--accent-blue); }
+        .incident.warning .incident-type { background: rgba(255, 217, 61, 0.2); color: var(--accent-yellow); }
+        .incident.error .incident-type { background: rgba(255, 71, 87, 0.2); color: var(--accent-red); }
+
+        .incident-time {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .incident-message { font-size: 0.85rem; }
+
+        .incident-details {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            word-break: break-all;
+        }
+
+        .process-list {
+            display: grid;
+            gap: 0.25rem;
+        }
+
+        .process-item {
+            display: grid;
+            grid-template-columns: 60px 60px 60px 1fr;
+            gap: 1rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            align-items: center;
+        }
+
+        .process-item-header {
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .process-mem { color: var(--accent); }
+        .process-mem.high { color: var(--accent-yellow); }
+        .process-mem.critical { color: var(--accent-red); }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .service-card {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .service-status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .service-status-dot.active { background: var(--accent); }
+        .service-status-dot.inactive { background: var(--accent-red); }
+        .service-status-dot.unknown { background: var(--text-dim); }
+
+        .service-info h4 { font-size: 0.9rem; margin-bottom: 0.25rem; }
+        .service-info p { font-size: 0.75rem; color: var(--text-secondary); font-family: var(--font-mono); }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .two-col, .memory-container { grid-template-columns: 1fr; }
+        }
+
+        .contribute-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .contribute-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .contribute-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .contribute-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 0.75rem;
+            background: var(--accent-dim);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .contribute-title { font-weight: 600; margin-bottom: 0.25rem; }
+        .contribute-desc { font-size: 0.8rem; color: var(--text-secondary); }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+
+        footer a { color: var(--accent); text-decoration: none; }
+
+        .refresh-info {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .disk-grid {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .disk-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+
+        .disk-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .disk-bar {
+            height: 8px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .disk-used {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        .disk-used.warning { background: var(--accent-yellow); }
+        .disk-used.critical { background: var(--accent-red); }
+
+        .error-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--accent-red);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Video Background -->
+    <video autoplay muted loop playsinline class="video-bg">
+        <source src="bg-video.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+
+    <header>
+        <div class="header-content">
+            <a href="https://whistle.ninja" class="logo">
+                <img src="logo.png" alt="Whistle" class="logo-img">
+                <span>Open Ops</span>
+            </a>
+            <div class="header-links">
+                <a href="https://github.com/DylanPort/WHISTLE" target="_blank">GitHub</a>
+                <a href="https://earn.whistle.ninja" target="_blank">Nodes</a>
+                <a href="https://rpc.whistle.ninja" target="_blank">RPC</a>
+            </div>
+            <div class="live-indicator">
+                <span class="live-dot healthy" id="liveDot"></span>
+                <span id="liveStatus">LIVE</span>
+                <span class="refresh-info" id="lastUpdate">--</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h1>Whistle <span>Open Operations</span></h1>
+            <p>Real-time infrastructure monitoring. Everything is live. Nothing is mocked.</p>
+        </div>
+
+        <!-- Overall Status -->
+        <div class="overall-status healthy" id="overallStatus">
+            <span id="overallStatusText">Loading...</span>
+        </div>
+
+        <!-- Status Cards -->
+        <div class="status-grid" id="statusGrid">
+            <div class="status-card" id="validatorCard">
+                <div class="status-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                </div>
+                <div class="status-name">Validator</div>
+                <div class="status-value" id="validatorStatus">--</div>
+                <div class="status-detail" id="validatorDetail">Loading...</div>
+            </div>
+
+            <div class="status-card" id="relayCard">
+                <div class="status-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <div class="status-name">Relay Nodes</div>
+                <div class="status-value" id="relayNodes">--</div>
+                <div class="status-detail" id="relayDetail">Loading...</div>
+            </div>
+
+            <div class="status-card" id="memoryCard">
+                <div class="status-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                        <rect x="9" y="9" width="6" height="6"></rect>
+                    </svg>
+                </div>
+                <div class="status-name">Memory</div>
+                <div class="status-value" id="memoryPercent">--</div>
+                <div class="status-detail" id="memoryDetail">Loading...</div>
+            </div>
+
+            <div class="status-card" id="cpuCard">
+                <div class="status-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                </div>
+                <div class="status-name">CPU Load</div>
+                <div class="status-value" id="cpuLoad">--</div>
+                <div class="status-detail" id="cpuDetail">Loading...</div>
+            </div>
+
+            <div class="status-card" id="requestsCard">
+                <div class="status-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    </svg>
+                </div>
+                <div class="status-name">Requests</div>
+                <div class="status-value" id="totalRequests">--</div>
+                <div class="status-detail" id="requestsDetail">Loading...</div>
+            </div>
+
+            <div class="status-card" id="uptimeCard">
+                <div class="status-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <div class="status-name">Uptime</div>
+                <div class="status-value" id="uptime">--</div>
+                <div class="status-detail" id="uptimeDetail">Loading...</div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <!-- Memory & Disk -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                        </svg>
+                        Memory & Disk
+                    </div>
+                </div>
+                <div class="memory-container">
+                    <div class="memory-bar-container">
+                        <div class="memory-label">RAM Usage</div>
+                        <div class="memory-bar">
+                            <div class="memory-used healthy" id="ramBar" style="width: 0%">
+                                <span id="ramPercent">0%</span>
+                            </div>
+                        </div>
+                        <div class="memory-labels">
+                            <span id="ramUsed">0 GB</span>
+                            <span id="ramTotal">0 GB</span>
+                        </div>
+                    </div>
+                    <div class="memory-bar-container">
+                        <div class="memory-label">Swap Usage</div>
+                        <div class="memory-bar">
+                            <div class="memory-used healthy" id="swapBar" style="width: 0%">
+                                <span id="swapPercent">0%</span>
+                            </div>
+                        </div>
+                        <div class="memory-labels">
+                            <span id="swapUsed">0 GB</span>
+                            <span id="swapTotal">0 GB</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <div class="memory-label">Disk Usage</div>
+                    <div class="disk-grid" id="diskGrid">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                        Services
+                    </div>
+                </div>
+                <div class="service-grid" id="serviceGrid">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <!-- Live Incidents -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        Live Incidents
+                    </div>
+                    <span class="refresh-info">From journalctl & dmesg</span>
+                </div>
+                <div class="incident-feed" id="incidentFeed">
+                    <div class="loading"><div class="spinner"></div>Loading incidents...</div>
+                </div>
+            </div>
+
+            <!-- Top Processes -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                        Top Processes (by Memory)
+                    </div>
+                </div>
+                <div class="process-item process-item-header">
+                    <span>MEM %</span>
+                    <span>CPU %</span>
+                    <span>RSS</span>
+                    <span>Command</span>
+                </div>
+                <div class="process-list" id="processList">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>Whistle Open Operations - Real-time monitoring</p>
+    </footer>
+
+    <script>
+        // API endpoints
+        const METRICS_API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://212.108.83.86:8088/api'  // Use server IP:port for local testing
+            : '/api';
+        const RELAY_API = 'https://earn.whistle.ninja/relay';
+
+        let lastMetrics = null;
+        let errorCount = 0;
+
+        function formatBytes(bytes) {
+            if (!bytes) return '0 B';
+            if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(1) + ' GB';
+            if (bytes >= 1048576) return (bytes / 1048576).toFixed(0) + ' MB';
+            if (bytes >= 1024) return (bytes / 1024).toFixed(0) + ' KB';
+            return bytes + ' B';
+        }
+
+        function formatNumber(n) {
+            if (!n) return '0';
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+            return n.toLocaleString();
+        }
+
+        function setCardStatus(cardId, status) {
+            const card = document.getElementById(cardId);
+            card.className = `status-card ${status}`;
+        }
+
+        async function loadMetrics() {
+            try {
+                // Try to get metrics from our API
+                let metrics = null;
+                
+                try {
+                    const response = await fetch(`${METRICS_API}/metrics`, { timeout: 5000 });
+                    if (response.ok) {
+                        metrics = await response.json();
+                    }
+                } catch (e) {
+                    console.log('Metrics API not available, using relay data');
+                }
+
+                // Always get relay data
+                const relayResponse = await fetch(`${RELAY_API}/health`);
+                const relayData = await relayResponse.json();
+
+                // Test RPC health
+                let rpcHealthy = false;
+                let rpcSlot = null;
+                try {
+                    const rpcResponse = await fetch('https://rpc.whistle.ninja', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getSlot' })
+                    });
+                    const rpcData = await rpcResponse.json();
+                    if (rpcData.result) {
+                        rpcHealthy = true;
+                        rpcSlot = rpcData.result;
+                    }
+                } catch (e) {}
+
+                // Update overall status
+                const overallEl = document.getElementById('overallStatus');
+                const overallTextEl = document.getElementById('overallStatusText');
+                const liveDot = document.getElementById('liveDot');
+
+                if (rpcHealthy && relayData.connectedNodes > 0) {
+                    overallEl.className = 'overall-status healthy';
+                    overallTextEl.textContent = 'All Systems Operational';
+                    liveDot.className = 'live-dot healthy';
+                } else if (relayData.connectedNodes > 0) {
+                    overallEl.className = 'overall-status warning';
+                    overallTextEl.textContent = 'Validator Issue - Relay Active';
+                    liveDot.className = 'live-dot warning';
+                } else {
+                    overallEl.className = 'overall-status critical';
+                    overallTextEl.textContent = 'Critical - Services Down';
+                    liveDot.className = 'live-dot critical';
+                }
+
+                // Update Validator
+                if (rpcHealthy) {
+                    document.getElementById('validatorStatus').textContent = 'Online';
+                    document.getElementById('validatorDetail').textContent = `Slot ${rpcSlot?.toLocaleString()}`;
+                    setCardStatus('validatorCard', 'healthy');
+                } else {
+                    document.getElementById('validatorStatus').textContent = 'Down';
+                    document.getElementById('validatorDetail').textContent = 'Not responding';
+                    setCardStatus('validatorCard', 'critical');
+                }
+
+                // Update Relay
+                document.getElementById('relayNodes').textContent = relayData.connectedNodes || 0;
+                document.getElementById('relayDetail').textContent = `${relayData.effectiveLatencyMs || '--'}ms latency`;
+                setCardStatus('relayCard', relayData.connectedNodes > 0 ? 'healthy' : 'critical');
+
+                // Update Requests
+                const totalReq = relayData.persistentStats?.totalRequests || relayData.totalRequests || 0;
+                document.getElementById('totalRequests').textContent = formatNumber(totalReq);
+                document.getElementById('requestsDetail').textContent = formatBytes(relayData.persistentStats?.totalDataServed || relayData.totalBytes);
+                setCardStatus('requestsCard', 'healthy');
+
+                // If we have full metrics from our API
+                if (metrics) {
+                    // Memory
+                    const memPercent = metrics.memory?.usedPercent || 0;
+                    document.getElementById('memoryPercent').textContent = memPercent + '%';
+                    document.getElementById('memoryDetail').textContent = metrics.formatted?.memoryUsed + ' / ' + metrics.formatted?.memoryTotal;
+                    setCardStatus('memoryCard', metrics.memory?.critical ? 'critical' : (metrics.memory?.warning ? 'warning' : 'healthy'));
+
+                    document.getElementById('ramBar').style.width = memPercent + '%';
+                    document.getElementById('ramBar').className = `memory-used ${metrics.memory?.critical ? 'critical' : (metrics.memory?.warning ? 'warning' : 'healthy')}`;
+                    document.getElementById('ramPercent').textContent = memPercent + '%';
+                    document.getElementById('ramUsed').textContent = metrics.formatted?.memoryUsed;
+                    document.getElementById('ramTotal').textContent = metrics.formatted?.memoryTotal;
+
+                    const swapPercent = metrics.memory?.swapUsedPercent || 0;
+                    document.getElementById('swapBar').style.width = swapPercent + '%';
+                    document.getElementById('swapBar').className = `memory-used ${swapPercent > 80 ? 'critical' : (swapPercent > 50 ? 'warning' : 'healthy')}`;
+                    document.getElementById('swapPercent').textContent = swapPercent + '%';
+                    document.getElementById('swapUsed').textContent = formatBytes(metrics.memory?.swapUsed);
+                    document.getElementById('swapTotal').textContent = formatBytes(metrics.memory?.swapTotal);
+
+                    // CPU
+                    const cpuPercent = metrics.cpu?.loadPercent || 0;
+                    document.getElementById('cpuLoad').textContent = cpuPercent + '%';
+                    document.getElementById('cpuDetail').textContent = `${metrics.cpu?.cores || 0} cores`;
+                    setCardStatus('cpuCard', metrics.cpu?.critical ? 'critical' : (metrics.cpu?.warning ? 'warning' : 'healthy'));
+
+                    // Uptime
+                    document.getElementById('uptime').textContent = metrics.uptime?.formatted || '--';
+                    document.getElementById('uptimeDetail').textContent = 'System uptime';
+                    setCardStatus('uptimeCard', 'healthy');
+
+                    // Disk
+                    if (metrics.disk && Array.isArray(metrics.disk)) {
+                        document.getElementById('diskGrid').innerHTML = metrics.disk.map(d => `
+                            <div class="disk-item">
+                                <div class="disk-header">
+                                    <span>${d.mount}</span>
+                                    <span>${d.usedPercent}% (${formatBytes(d.used)} / ${formatBytes(d.total)})</span>
+                                </div>
+                                <div class="disk-bar">
+                                    <div class="disk-used ${d.critical ? 'critical' : (d.warning ? 'warning' : '')}" style="width: ${d.usedPercent}%"></div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+
+                    // Services
+                    if (metrics.services) {
+                        document.getElementById('serviceGrid').innerHTML = metrics.services.map(s => `
+                            <div class="service-card">
+                                <div class="service-status-dot ${s.status}"></div>
+                                <div class="service-info">
+                                    <h4>${s.displayName}</h4>
+                                    <p>${s.status === 'active' ? (s.memoryMB ? s.memoryMB + ' MB' : 'Running') : s.status}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+
+                    // Incidents
+                    if (metrics.incidents && metrics.incidents.length > 0) {
+                        document.getElementById('incidentFeed').innerHTML = metrics.incidents.map(i => `
+                            <div class="incident ${i.type}">
+                                <div class="incident-header">
+                                    <span class="incident-type">${i.type}</span>
+                                    <span class="incident-time">${i.time}</span>
+                                </div>
+                                <div class="incident-message">${i.message}</div>
+                                ${i.details ? `<div class="incident-details">${i.details}</div>` : ''}
+                            </div>
+                        `).join('');
+                    } else {
+                        document.getElementById('incidentFeed').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--accent);">No incidents in last 24 hours</div>';
+                    }
+
+                    // Processes
+                    if (metrics.topProcesses) {
+                        document.getElementById('processList').innerHTML = metrics.topProcesses.map(p => `
+                            <div class="process-item">
+                                <span class="process-mem ${p.mem > 10 ? 'critical' : (p.mem > 5 ? 'high' : '')}">${p.mem?.toFixed(1)}%</span>
+                                <span>${p.cpu?.toFixed(1)}%</span>
+                                <span>${formatBytes(p.rss)}</span>
+                                <span style="color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis;">${p.command}</span>
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    // Fallback: show relay data only
+                    document.getElementById('memoryPercent').textContent = '--';
+                    document.getElementById('memoryDetail').textContent = 'Metrics API offline';
+                    setCardStatus('memoryCard', 'warning');
+
+                    document.getElementById('cpuLoad').textContent = '--';
+                    document.getElementById('cpuDetail').textContent = 'Metrics API offline';
+                    setCardStatus('cpuCard', 'warning');
+
+                    document.getElementById('uptime').textContent = '--';
+                    document.getElementById('uptimeDetail').textContent = 'Metrics API offline';
+                    setCardStatus('uptimeCard', 'warning');
+
+                    document.getElementById('incidentFeed').innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Connect to ops.whistle.ninja for live incidents</div>';
+                    document.getElementById('processList').innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-secondary);">Connect to ops.whistle.ninja for process list</div>';
+                    document.getElementById('serviceGrid').innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-secondary);">Connect to ops.whistle.ninja for service status</div>';
+                    document.getElementById('diskGrid').innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-secondary);">Connect to ops.whistle.ninja for disk info</div>';
+                }
+
+                // Update timestamp
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                errorCount = 0;
+
+            } catch (error) {
+                console.error('Failed to load metrics:', error);
+                errorCount++;
+                
+                if (errorCount > 3) {
+                    document.getElementById('overallStatus').className = 'overall-status critical';
+                    document.getElementById('overallStatusText').textContent = 'Connection Error';
+                    document.getElementById('liveDot').className = 'live-dot critical';
+                }
+            }
+        }
+
+        // Initial load
+        loadMetrics();
+
+        // Refresh every 5 seconds
+        setInterval(loadMetrics, 5000);
+    </script>
+</body>
+</html>
