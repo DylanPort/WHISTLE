@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const VERSION = '2.4.0'; // Geo-detection + auto-pick nearest relay
+const VERSION = '2.5.0'; // Smart caching + geo-detection
 const WALLET = process.env.WALLET;
 
 // Relay servers by region
@@ -113,16 +113,61 @@ const NAME = `${os.hostname().slice(0, 10)}-${WALLET.slice(0, 4)}`;
 let ws = null, connected = false, reconnectAttempts = 0, sessionStart = Date.now(), lastPing = Date.now();
 
 // Session stats
-const session = { requests: 0, hits: 0, errors: 0, latencySum: 0, peak: 0, bytes: 0 };
+const session = { requests: 0, hits: 0, errors: 0, latencySum: 0, peak: 0, bytes: 0, bypassedCache: 0 };
 const requestLog = [];
 const MAX_LOG = 15;
 
-// Cache
+// Smart Cache System
 const cache = new Map();
+const CACHE_MAX_SIZE = 5000; // Allow more cached items
+
+// TTLs in milliseconds - tuned for Solana's ~400ms slot time
 const CACHE_TTL = {
-  'getSlot': 1000, 'getBlockHeight': 1000, 'getEpochInfo': 30000,
-  'getHealth': 5000, 'getVersion': 60000, 'getGenesisHash': 300000, 'default': 2000
+  // Slot-level data (changes every 400ms, but 500ms cache is fine for most uses)
+  'getSlot': 500,
+  'getBlockHeight': 500,
+  'getRecentBlockhash': 500,
+  'getLatestBlockhash': 500,
+  
+  // Account data (short cache - balance can change quickly)
+  'getAccountInfo': 800,           // ~2 slots - good for reads
+  'getBalance': 1500,              // 1.5 sec - balances don't change that fast
+  'getTokenAccountBalance': 1500,
+  'getTokenAccountsByOwner': 3000, // 3 sec - token lists rarely change
+  'getProgramAccounts': 5000,      // 5 sec - expensive call, cache longer
+  'getMultipleAccounts': 800,
+  
+  // Block/transaction data (immutable once confirmed)
+  'getBlock': 60000,               // 1 min - blocks don't change
+  'getTransaction': 300000,        // 5 min - confirmed txs are immutable
+  'getSignaturesForAddress': 5000, // 5 sec
+  'getConfirmedTransaction': 300000,
+  
+  // Network/epoch data (slow-changing)
+  'getEpochInfo': 30000,           // 30 sec
+  'getEpochSchedule': 300000,      // 5 min
+  'getHealth': 5000,
+  'getVersion': 300000,            // 5 min
+  'getGenesisHash': 3600000,       // 1 hour - never changes
+  'getMinimumBalanceForRentExemption': 60000, // 1 min
+  'getClusterNodes': 60000,
+  'getVoteAccounts': 30000,
+  'getSupply': 30000,
+  'getInflationRate': 60000,
+  
+  'default': 1000                  // 1 sec default
 };
+
+// NEVER cache these methods - they must always hit the validator
+const NO_CACHE_METHODS = new Set([
+  'sendTransaction',
+  'sendRawTransaction', 
+  'simulateTransaction',
+  'requestAirdrop',
+  'getSignatureStatuses',  // Need real-time confirmation status
+  'getRecentPerformanceSamples',
+  'getFeeForMessage',
+]);
 
 // Blockchain data
 let blockchain = {
@@ -301,7 +346,8 @@ function render() {
   // Total Earned
   const totalStr = blockchain.totalEarned > 0 ? `${C.m}${fmtSOL(blockchain.totalEarned)}${C.r}` : `${C.d}0.0000 SOL${C.r}`;
   const hitRate = session.requests > 0 ? Math.round((session.hits / session.requests) * 100) : 0;
-  console.log(`${pad(`  ${C.d}Total Earned:${C.r} ${totalStr}`, COL1 + 15)}│ ${C.d}Cache Hit:${C.r}   ${C.g}${hitRate}%${C.r}`);
+  const hitColor = hitRate > 50 ? C.g : hitRate > 20 ? C.y : C.d;
+  console.log(`${pad(`  ${C.d}Total Earned:${C.r} ${totalStr}`, COL1 + 15)}│ ${C.d}Cache Hit:${C.r}   ${hitColor}${hitRate}% (${session.hits}/${session.requests})${C.r}`);
   
   // Bond Amount
   const bondStr = blockchain.bondAmount > 0 ? `${C.b}${(blockchain.bondAmount / 1e6).toFixed(0)} WHISTLE${C.r}` : `${C.d}Not bonded${C.r}`;
@@ -312,8 +358,11 @@ function render() {
   const errRate = session.requests > 0 ? ((session.errors / session.requests) * 100).toFixed(1) : '0.0';
   console.log(`${pad(`  ${C.d}Status:${C.r}       ${regStr}`, COL1 + 15)}│ ${C.d}Errors:${C.r}      ${session.errors > 0 ? C.red : C.g}${session.errors} (${errRate}%)${C.r}`);
   
+  // Cache size
+  console.log(`${pad(`  ${C.d}Last Update:${C.r}  ${C.d}${blockchain.lastUpdate ? fmtTime(Date.now() - blockchain.lastUpdate) + ' ago' : 'Never'}${C.r}`, COL1 + 15)}│ ${C.d}Cache:${C.r}       ${C.b}${cache.size} items${C.r}`);
+  
   // Data transferred
-  console.log(`${pad(`  ${C.d}Last Update:${C.r}  ${C.d}${blockchain.lastUpdate ? fmtTime(Date.now() - blockchain.lastUpdate) + ' ago' : 'Never'}${C.r}`, COL1 + 15)}│ ${C.d}Data:${C.r}        ${C.b}${fmtBytes(session.bytes)}${C.r}`);
+  console.log(`${pad(`  `, COL1)}│ ${C.d}Data:${C.r}        ${C.b}${fmtBytes(session.bytes)}${C.r}`);
   
   console.log(`  ${C.d}${'─'.repeat(COL1 - 3)}${C.r}┴${C.d}${'─'.repeat(Math.min(COL2, 50))}${C.r}`);
   console.log('');
@@ -370,25 +419,52 @@ function fetchRPC(payload) {
 
 async function handleRequest(msg) {
   const start = Date.now();
-  const key = JSON.stringify(msg.payload);
   const method = msg.payload?.method || 'unknown';
+  
+  // Build cache key - method + stringified params
+  const key = method + ':' + JSON.stringify(msg.payload?.params || []);
   
   let result = null, error = null, cached = false, size = 0;
   
-  const cachedData = cache.get(key);
+  // Check if this method should be cached
+  const shouldCache = !NO_CACHE_METHODS.has(method);
   const ttl = CACHE_TTL[method] || CACHE_TTL['default'];
-  if (cachedData && Date.now() - cachedData.ts < ttl) {
-    result = { ...cachedData.data, _cached: true };
-    cached = true;
-    size = cachedData.size;
-    session.hits++;
-  } else {
+  
+  if (!shouldCache) session.bypassedCache++;
+  
+  // Try cache first (only for cacheable methods)
+  if (shouldCache) {
+    const cachedData = cache.get(key);
+    if (cachedData && Date.now() - cachedData.ts < ttl) {
+      result = cachedData.data;
+      cached = true;
+      size = cachedData.size;
+      session.hits++;
+    }
+  }
+  
+  // If not cached, fetch from RPC
+  if (!cached) {
     try {
       const res = await fetchRPC(msg.payload);
       result = res.data;
       size = res.size;
-      cache.set(key, { data: result, ts: Date.now(), size });
-      if (cache.size > 1000) cache.delete(cache.keys().next().value);
+      
+      // Only cache successful responses for cacheable methods
+      if (shouldCache && result && !result.error) {
+        cache.set(key, { data: result, ts: Date.now(), size });
+        
+        // Evict old entries if cache is too large
+        if (cache.size > CACHE_MAX_SIZE) {
+          // Delete oldest 10% of entries
+          const toDelete = Math.floor(CACHE_MAX_SIZE * 0.1);
+          const keys = cache.keys();
+          for (let i = 0; i < toDelete; i++) {
+            const k = keys.next().value;
+            if (k) cache.delete(k);
+          }
+        }
+      }
     } catch (e) {
       error = e.message;
       session.errors++;
@@ -412,7 +488,7 @@ async function handleRequest(msg) {
   if (requestLog.length > 50) requestLog.shift();
   
   if (ws && ws.readyState === 1) {
-    ws.send(JSON.stringify({ type: 'rpc_response', id: msg.id, result: error ? undefined : result, error: error || undefined, latencyMs: lat }));
+    ws.send(JSON.stringify({ type: 'rpc_response', id: msg.id, result: error ? undefined : result, error: error || undefined, latencyMs: lat, cached }));
   }
   
   render();
